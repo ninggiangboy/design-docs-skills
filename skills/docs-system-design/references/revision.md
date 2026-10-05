@@ -1,63 +1,64 @@
-# Sửa SDD qua nhiều lượt
+# Revising an SDD over many turns
 
-Một SDD tốt hình thành qua nhiều lượt trao đổi. Mỗi lượt sửa phải để lại một tài liệu **nhất quán từ đầu đến cuối**, chứ không chỉ đúng ở chỗ vừa sửa. Lỗi hay gặp nhất khi sửa lặp: đổi một quyết định ở mục lõi nhưng bảng NFR, sơ đồ kiến trúc, bảng sự cố, thực nghiệm, kế hoạch và rủi ro vẫn nói theo quyết định cũ.
+A good SDD takes shape over many rounds of conversation. Every revision must leave a document that is **consistent end to end**, not only correct where it was just edited. The most common failure when revising iteratively: a decision changes in a core section while the NFR table, architecture diagram, failure table, experiments, plan and risks still describe the old decision.
 
-## 1. Mỗi lượt sửa
+## 1. Every revision
 
-1. **Đọc lại trạng thái hiện tại.** File có thể đã bị người dùng sửa tay giữa hai lượt. Luôn đọc lại các mục sẽ động tới (và `--outline` của check_sdd.py), không dựa vào bản trong trí nhớ.
-2. **Phân loại yêu cầu** theo bảng ở §2. Yêu cầu mơ hồ ("nhạt quá", "chưa đủ sâu", "viết lại phần này cho hay hơn") thì đề xuất 2–3 hướng cụ thể và hỏi, hoặc chọn hướng hợp lý nhất và nói rõ đã chọn gì.
-3. **Lập danh sách chỗ bị ảnh hưởng** bằng bảng lan truyền ở §3 cộng `grep` các từ khóa của quyết định cũ (tên bảng, tên trạng thái, con số, tên công nghệ, mã FR/NFR/EXP).
-4. **Sửa tối thiểu.** Edit đúng các đoạn cần đổi; không viết lại mục không liên quan, không đổi văn phong những phần người dùng đã duyệt. Viết lại cả file chỉ khi người dùng yêu cầu tái cấu trúc.
-5. **Giữ ổn định số mục và mã.** Thêm mục mới thì ưu tiên thêm cuối mục cha. Bắt buộc chèn giữa hoặc xóa mục thì đánh lại số và cập nhật **mọi** tham chiếu `mục X.Y`. Mã FR/NFR/UC/EXP đã cấp không đổi số; bỏ thì xóa dòng và mọi tham chiếu, thêm thì lấy số kế tiếp.
-6. **Chạy** `python3 <skill-dir>/scripts/check_sdd.py <file>` và sửa mọi lỗi E.
-7. **Báo lại ngắn**: đã đổi gì ở mục nào, những chỗ phải đổi theo (lan truyền), điều gì còn mở hoặc mâu thuẫn cần người dùng quyết. Không dán lại nội dung đã viết vào chat.
+1. **Re-read the current state.** The user may have edited the file by hand between turns. Always re-read the sections you will touch (and run `check_sdd.py --outline`); never rely on the version in memory.
+2. **Classify the request** with the table in §2. For a vague request ("too bland", "not deep enough", "make this section better"), propose 2–3 concrete directions and ask, or pick the most sensible one and say which.
+3. **List every affected place** using the propagation table in §3 plus `grep` for the old decision's keywords (table names, states, numbers, technology names, FR/NFR/EXP IDs).
+4. **Edit minimally.** Change only the paragraphs that must change; do not rewrite unrelated sections or restyle parts the user already approved. Rewrite the whole file only when the user asks for a restructure.
+5. **Keep section numbers and IDs stable.** Prefer appending a new subsection at the end of its parent. When inserting or deleting in the middle is unavoidable, renumber and update **every** section reference. FR/NFR/UC/EXP IDs never change number; a removed ID is deleted with all its references, a new one takes the next number.
+6. **Keep the language.** The SDD's language stays; never switch language because the user wrote the request in another one.
+7. **Run** `python3 <skill-dir>/scripts/check_sdd.py <file>` and fix every E error.
+8. **Report briefly**: what changed in which section, what had to change with it (propagation), and what is still open or contradictory and needs the user's decision. Do not paste the written content back into the chat.
 
-Yêu cầu mâu thuẫn với bất biến hoặc quyết định đã chốt trước đó (ví dụ "cho Redis giữ số vé" trong khi bất biến là không bán vượt): nói rõ mâu thuẫn và hệ quả, đề xuất cách đạt mục đích của người dùng mà không phá bất biến, chờ người dùng chọn.
+When a request contradicts an invariant or an earlier decision (for example "let Redis hold the ticket count" while the invariant is never overselling): state the contradiction and its consequence, propose a way to reach the user's goal without breaking the invariant, and wait for the user's choice.
 
-## 2. Loại yêu cầu
+## 2. Request types
 
-| Loại | Ví dụ | Cách làm |
+| Type | Example | How |
 | --- | --- | --- |
-| Đổi quyết định | "Dùng Kafka thay RabbitMQ", "giữ vé 15 phút" | Sửa chỗ định nghĩa, rồi lan truyền theo §3. Quyết định lớn thì cân nhắc thêm phân tích phương án |
-| Thêm module / tính năng | "Thêm hoàn tiền", "thêm soát vé" | Hỏi mức đầu tư (2.2) và giai đoạn (trong phạm vi hay để sau). Trong phạm vi: theo hàng "Thêm module" ở §3 |
-| Bỏ / dời sang để sau | "Bỏ phòng chờ khỏi giai đoạn này" | Chuyển sang bảng "Để sau" kèm cột "giai đoạn này xử lý thế nào"; gỡ khỏi mọi chỗ khác |
-| Đào sâu một mục | "Phân tích thêm các phương án kho vé" | Dùng mẫu phân tích phương án; thêm EXP so sánh nếu tuyên bố cần số đo |
-| Rút gọn | "Mục editor dài quá" | Giữ quy tắc, bất biến, quyết định và lý do; bỏ chi tiết cài đặt thuộc docs sau này |
-| Sửa văn phong / trình bày | "Thêm sơ đồ", "đổi sang bảng" | Không đổi nội dung; kiểm tra sơ đồ khớp chữ |
-| Sửa theo nhận xét review | Danh sách góp ý | Xử lý từng ý, báo lại theo từng ý: đã sửa ở đâu / không sửa vì sao |
-| Rà nhất quán | "Kiểm tra lại toàn bộ" | Chạy check_sdd.py, rồi đọc lần lượt theo danh sách §4 |
+| Change a decision | "Use Kafka instead of RabbitMQ", "hold tickets for 15 minutes" | Edit where it is defined, then propagate via §3. For a large decision consider adding an options analysis |
+| Add a module or feature | "Add refunds", "add ticket scanning" | Ask its investment level (2.2) and phase (in scope or later). If in scope, follow the "Add a module" row of §3 |
+| Remove or defer | "Move the waiting room to Later" | Move it to the "Later" table with its "How this phase handles it" column; remove it everywhere else |
+| Go deeper | "Analyze more options for the inventory" | Use the options-analysis pattern; add a comparison EXP when the claim needs numbers |
+| Shorten | "The editor section is too long" | Keep rules, invariants, decisions and reasons; drop implementation detail that belongs to the later docs |
+| Presentation | "Add a diagram", "make it a table" | No content change; check the diagram matches the text |
+| Review comments | A list of remarks | Handle each remark; report per remark: fixed where / not fixed and why |
+| Consistency pass | "Check everything again" | Run check_sdd.py, then read through the checklist of §4 |
 
-## 3. Bảng lan truyền
+## 3. Propagation table
 
-Khi đổi ở cột trái, kiểm tra mọi mục ở cột phải.
+When the left column changes, check every place in the right column.
 
-| Thay đổi | Phải xem lại |
+| Change | Check |
 | --- | --- |
-| Phạm vi (thêm, bớt, dời sang để sau) | Đoạn mở đầu, 1.3 Tầm nhìn, 2.2, 2.3, use case, FR, NFR, 4.1, sơ đồ kiến trúc, mục miền liên quan, mô hình dữ liệu, API, màn hình, triển khai, thực nghiệm, kế hoạch và thứ tự cắt giảm, demo, rủi ro, phụ lục repo |
-| Thêm module | 2.2 (mức đầu tư), 2.3, use case, FR/NFR, 4.1, sơ đồ kiến trúc, 4.3 công nghệ, mục miền mới, thực thể và ràng buộc, endpoint, màn hình, container triển khai, bảng sự cố, kiểm thử/EXP, giai đoạn kế hoạch, rủi ro, phụ lục repo |
-| Công nghệ / hạ tầng | 4.3, sơ đồ kiến trúc, 4.1, mọi mục miền nhắc tên công nghệ cũ (grep), triển khai, bảng sự cố, kiểm thử (công cụ), rủi ro, phụ lục repo, điểm còn mở |
-| Cơ chế lõi (cách đảm bảo đúng đắn) | Mục miền lõi, 4.2 nguyên tắc, bảng bất biến, máy trạng thái và bảng chuyển, ràng buộc dữ liệu, mã lỗi API, bảng sự cố, kiểm tra bất biến, EXP và baseline, rủi ro |
-| Vòng đời / trạng thái | `stateDiagram`, bảng chuyển, mọi câu SQL dùng tên trạng thái, ràng buộc/index một phần, API (trạng thái trả về), UI (hiển thị), job nền, kiểm tra bất biến |
-| Con số (thời hạn, ngưỡng, quy mô tải) | Mọi chỗ có con số đó (grep cả dạng `10 phút`, `10 minutes`, `600`), NFR, tham số, ví dụ tính nhẩm, EXP, demo, rủi ro, điểm còn mở |
-| Vai trò / quyền | 3.1, use case, bảng phân quyền, endpoint, màn hình, bảo mật |
-| Thực thể / bảng | erDiagram, bảng thực thể, ràng buộc, các câu SQL, endpoint trả thực thể đó, phụ lục repo (module) |
-| Endpoint | Bảng endpoint, ví dụ request/response, bảng lỗi, luồng có gọi endpoint (sequence), màn hình |
-| Thực nghiệm | Bảng EXP, đoạn "EXP nào chứng minh gì", NFR nhắc EXP, mục miền nhắc EXP, kế hoạch (giai đoạn nào ra số liệu EXP nào) |
-| Giai đoạn kế hoạch | Sơ đồ phụ thuộc, bảng giai đoạn, thứ tự cắt giảm, demo, bảng "Để sau" |
+| Scope (add, remove, defer) | Lead paragraph, 1.3 Vision, 2.2, 2.3, use cases, FRs, NFRs, 4.1, architecture diagram, affected domain sections, data model, API, screens, deployment, experiments, plan and cut order, demo, risks, repository appendix |
+| Add a module | 2.2 (investment), 2.3, use cases, FRs/NFRs, 4.1, architecture diagram, 4.3 technology, the new domain section, entities and constraints, endpoints, screens, deployment containers, failure table, tests/EXPs, plan stage, risks, repository appendix |
+| Technology / infrastructure | 4.3, architecture diagram, 4.1, every domain section naming the old technology (grep), deployment, failure table, testing tools, risks, repository appendix, open points |
+| Core mechanism (how correctness is ensured) | Core domain section, 4.2 principles, invariant table, state machines and transition tables, data constraints, API error codes, failure table, invariant checks, EXPs and baselines, risks |
+| Lifecycle / states | `stateDiagram`, transition table, every SQL statement using the state names, constraints and partial indexes, API (returned states), UI (display), background jobs, invariant checks |
+| A number (timeout, threshold, load target) | Every place with that number (grep every form: `10 minutes`, `10 phút`, `600`), NFRs, parameters, worked examples, EXPs, demo, risks, open points |
+| Roles / permissions | 3.1, use cases, permission table, endpoints, screens, security |
+| Entity / table | erDiagram, entity table, constraints, SQL statements, endpoints returning it, repository appendix (module) |
+| Endpoint | Endpoint table, request/response examples, error table, flows that call it (sequence diagrams), screens |
+| Experiment | EXP table, the "which EXP proves what" paragraph, NFRs naming EXPs, domain sections naming EXPs, plan (which stage produces which EXP) |
+| Plan stage | Dependency diagram, stage table, cut order, demo, "Later" table |
 
-## 4. Danh sách rà nhất quán
+## 4. Consistency checklist
 
-- Đoạn mở đầu, 1.3, 2.1, 2.3 nói cùng một phạm vi.
-- Mỗi module trong 2.2 có mục miền tương ứng với độ sâu đúng mức; mỗi thành phần ở 4.1 có trong sơ đồ kiến trúc và phụ lục repo.
-- Mỗi NFR có chỉ tiêu số và ít nhất một EXP hoặc cách kiểm chứng; mỗi EXP được giai đoạn kế hoạch nào đó tạo số liệu.
-- Mỗi trạng thái nhắc trong SQL/API/UI có trong máy trạng thái tương ứng, và ngược lại.
-- Mọi công nghệ nhắc trong thân bài có trong 4.3.
-- Bảng sự cố có mọi kho dữ liệu và dịch vụ ngoài trong sơ đồ kiến trúc.
-- Rủi ro nào cũng có cách xử lý trỏ về mục thiết kế; "Điểm còn mở" phản ánh đúng những gì chưa chốt sau lượt sửa này.
-- check_sdd.py không còn lỗi E.
+- The lead paragraph, 1.3, 2.1 and 2.3 describe the same scope.
+- Every module of 2.2 has a domain section of the right depth; every component of 4.1 appears in the architecture diagram and the repository appendix.
+- Every NFR has a numeric target and at least one EXP or verification; every EXP is produced by some plan stage.
+- Every state used in SQL/API/UI exists in its state machine, and vice versa.
+- Every technology mentioned in the body is in 4.3.
+- The failure table covers every data store and external service in the architecture diagram.
+- Every risk has a mitigation pointing to a designed section; "Open points" reflects exactly what is still undecided after this revision.
+- check_sdd.py reports no E errors.
 
-## 5. Lịch sử thay đổi
+## 5. History
 
-- SDD không có mục changelog trong file; lịch sử nằm ở git.
-- Nếu thư mục là git repo và người dùng yêu cầu commit: một commit cho mỗi thay đổi có nghĩa, tiêu đề `docs(sdd): <mô tả bằng tiếng Anh>` (ví dụ `docs(sdd): expand inventory design alternatives and selection rationale`). Không tự commit khi chưa được yêu cầu.
-- Khi người dùng muốn so với bản trước: `git diff -- <file>` hoặc so với bản sao lưu người dùng chỉ ra.
+- The SDD has no changelog section; history lives in git.
+- If the folder is a git repository and the user asks to commit: one commit per meaningful change, subject `docs(sdd): <description in English>` (e.g. `docs(sdd): expand inventory design alternatives and selection rationale`). Never commit without being asked.
+- To compare with an earlier version: `git diff -- <file>`, or against a backup the user points to.

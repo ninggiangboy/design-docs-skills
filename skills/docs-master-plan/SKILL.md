@@ -1,100 +1,113 @@
 ---
 name: docs-master-plan
-description: Từ một file SDD (tài liệu thiết kế hệ thống), lập sổ quyết định (docs/00-decision-register.md), master plan (docs/00-master-plan.md) và mục lục docs/README.md theo phương pháp "doc gate". Master plan liệt kê mọi tài liệu cần viết kèm nội dung bắt buộc và gate, mọi việc theo phase kèm tiêu chí nghiệm thu, ma trận truy vết. Dùng khi người dùng muốn "lập master plan từ SDD", "phân tích SDD", "tạo decision register", "chuẩn bị bộ docs cho dự án mới", hoặc cập nhật DR/plan sau khi Owner duyệt. Bước sau là skill docs-project.
-argument-hint: "<đường dẫn SDD> | apply-decisions"
+description: Turns a system design document (SDD) into a decision register (docs/00-decision-register.md), a gated master plan (docs/00-master-plan.md) and a docs index (docs/README.md). The master plan lists every document to write with its required content and gate, every task by phase with acceptance criteria, and a traceability matrix; the register turns every gap in the SDD into a decision with a proposed option. Asks for the output language on first use and records it in the plan. Use when the user wants a master plan or decision register from an SDD, to analyze an SDD for gaps, to prepare the doc set of a new project, or to apply the Owner's decisions afterwards (also in Vietnamese, e.g. "lập master plan từ SDD", "phân tích SDD", "tạo sổ quyết định"). The next step is the docs-project skill.
+argument-hint: "<path to SDD> | apply-decisions"
 license: MIT
 ---
 
-# SDD → Sổ quyết định + Master plan
+# SDD → decision register + master plan
 
-Đầu vào: một file SDD ở gốc repo (gọi là **SDD gốc**). Đầu ra, theo thứ tự:
+Input: one SDD at the repository root (the **original SDD**). Outputs, in order:
 
-1. `docs/00-decision-register.md`: mọi chỗ SDD chưa nói "chính xác như thế nào", mỗi chỗ một DR kèm một phương án đề xuất.
-2. `docs/00-master-plan.md`: tài liệu cần viết (nội dung bắt buộc, gate), lộ trình, việc từng phase, truy vết, quy ước, template.
-3. `docs/README.md`: mục lục và bảng trạng thái.
+1. `docs/00-decision-register.md`: every place where the SDD does not say "exactly how", each as a DR with one proposed option.
+2. `docs/00-master-plan.md`: documents to write (required content, gate), roadmap, tasks per phase, traceability, conventions, templates.
+3. `docs/README.md`: index and status table.
 
-Skill này **không** viết các DOC-xx; việc đó thuộc skill `docs-project`.
+This skill does **not** write the DOC-xx documents; that is the `docs-project` skill.
 
-Tham chiếu (đọc trước khi viết phần tương ứng):
+`<skill-dir>` in commands below is the directory containing this SKILL.md. Scripts need Python 3.10+.
 
-- [references/conventions.md](references/conventions.md): mã định danh, khối đầu file, trạng thái, quyết định, ngôn ngữ, văn phong. Đọc đầu tiên.
-- [references/decision-register.md](references/decision-register.md): khung sổ quyết định và **danh sách soát khoảng trống**.
-- [references/doc-catalog.md](references/doc-catalog.md): danh mục tài liệu chuẩn, điều kiện chọn, nội dung bắt buộc, gate mặc định.
-- [references/master-plan.md](references/master-plan.md): khung master plan từng mục.
-- [references/templates.md](references/templates.md): template A.1–A.7 cho phụ lục A, và B.6 cho README.
-- `scripts/check_docs.py [docs_dir]`: kiểm tra mã định danh, link, khối trạng thái. Cần Python 3.10+. `<skill-dir>` trong các lệnh là thư mục chứa file SKILL.md này.
+References (read before writing the matching part):
 
-## Chế độ
+- [references/language.md](references/language.md): asking for the output language, vocabulary, the plan's Language block. Read first.
+- [references/conventions.md](references/conventions.md): identifiers, header block, statuses, decisions, style.
+- [references/decision-register.md](references/decision-register.md): register skeleton and the **gap-hunting checklist**.
+- [references/doc-catalog.md](references/doc-catalog.md): standard documents, when to include each, required content, default gates.
+- [references/master-plan.md](references/master-plan.md): master plan skeleton, section by section.
+- [references/templates.md](references/templates.md): templates A.1–A.7 for Appendix A and B.6 for the README.
+- `locales/<code>.md`: vocabulary per language (`en`, `vi`, `ja`, `zh`, `ko`, `fr`, `es`, `de`).
+- `scripts/check_docs.py [docs_dir] [--vocab FILE]`: checks IDs, links, status lines.
 
-- `/docs-master-plan <sdd.md>`: tạo mới (bước 1–7).
-- `/docs-master-plan apply-decisions`: Owner đã trả lời các DR → bước 8.
+## Modes
 
-## Quy trình
+- `/docs-master-plan <sdd.md>`: create (steps 1–7).
+- `/docs-master-plan apply-decisions`: the Owner has answered the DRs → step 8.
 
-### 1. Kiểm tra trước
+## Procedure
 
-- Không có đường dẫn SDD thì tìm file `.md` lớn ở gốc repo có tiêu đề kiểu "Thiết kế hệ thống"/"System design"; không chắc thì hỏi.
-- `docs/00-master-plan.md` hoặc `docs/00-decision-register.md` đã có thì **không ghi đè**. Hỏi người dùng: sửa bản hiện có hay dừng.
-- Ngày trong mọi khối đầu file là ngày hôm nay.
+### 1. Pre-checks
 
-### 2. Đọc toàn bộ SDD
+- No SDD path given: look for a large `.md` at the repository root whose title is "… — System Design" or its translation; ask if unsure.
+- `docs/00-master-plan.md` or `docs/00-decision-register.md` already exists: **do not overwrite**. Ask whether to revise the existing files or stop.
+- Every header date is today.
 
-Đọc hết, không lướt; file dài thì đọc theo đoạn tới cuối. Ghi chú nháp (scratchpad, không vào repo) **hồ sơ dự án**:
+### 2. Read the whole SDD
 
-- Mục tiêu, câu hỏi nghiên cứu hoặc giá trị chính; phần nào là lõi không được cắt.
-- Người dùng và role; FR và NFR (giữ nguyên mã nếu SDD đã đánh số).
-- Thành phần, kho dữ liệu, kênh trao đổi (API, broker, file), hệ thống ngoài.
-- Có UI không, AI không, thực nghiệm không, báo cáo đồ án không, môi trường triển khai nào.
-- Kế hoạch, thứ tự cắt giảm và rủi ro mà SDD đã nêu.
-- Mọi danh từ chuyên môn (đầu vào cho danh sách thuật ngữ tối thiểu của glossary).
+Read it all, not skimming; read long files in chunks to the end. Keep a scratch **project profile** (in the session scratchpad, not in the repo):
 
-### 3. Hỏi tối thiểu
+- Goal, research question or main value; which part is the core that must not be cut.
+- Users and roles; FRs and NFRs (keep the SDD's IDs if it has them).
+- Components, data stores, channels (API, broker, files), external systems.
+- UI? AI? experiments? academic report? target environments?
+- Plan, cut order and risks the SDD already states.
+- Every domain noun (input to the glossary's minimum term list).
+- The SDD's language.
 
-Chỉ hỏi điều không suy ra được và làm thay đổi đầu ra. Dùng một lần AskUserQuestion, tối đa 3 câu:
+### 3. Ask (one AskUserQuestion, at most 4 questions)
 
-- Ngôn ngữ của `docs/` (mặc định: ngôn ngữ của SDD; code, UI, commit bằng tiếng Anh).
-- Phạm vi: làm đầy đủ hay đã biết phần sẽ cắt.
-- Khi viết docs về sau, Claude có được tự chốt quyết định nhỏ không (người chốt ghi "Claude (Owner ủy quyền)").
+Always ask, even if the answers look obvious:
 
-Mọi lựa chọn kỹ thuật khác **không hỏi**: đưa vào sổ quyết định dưới dạng đề xuất.
+1. **Output language of the documents** (`language.md` §1): the SDD's language first, then English, then other likely languages; "Other" accepts any language.
+2. **Language of code, UI strings, logs, commits**: default English.
 
-### 4. Viết sổ quyết định
+Ask only when not inferable:
 
-Theo `references/decision-register.md`. Đi qua SDD từng mục, áp danh sách soát khoảng trống, đọc kỹ để tìm cả mâu thuẫn bên trong SDD. Mỗi DR có quyết định đề xuất **cụ thể đến mức viết code được** (DDL, JSON, bảng, giá trị mặc định có đơn vị). Đánh dấu ⚠ khi lệch SDD, 🔬 khi cần spike. Mỗi DR có "Ghi vào" trỏ tới DOC/ADR sẽ có trong plan. Kết thúc bằng bảng "Tổng hợp theo mức ảnh hưởng". Trạng thái tài liệu: `Review`; mọi DR: `Đề xuất`.
+3. Scope: build everything, or known cuts.
+4. While writing docs later, may Claude decide small questions itself (recorded as `dr.delegated`)?
 
-File dài: viết khung trước, rồi thêm từng nhóm bằng Edit, không dồn vào một lần ghi.
+Every other technical choice is **not** asked: it goes into the register as a proposal.
 
-### 5. Viết master plan
+Then load the vocabulary: `locales/<code>.md` when shipped; otherwise build it by translating `locales/en.md` (`language.md` §2) for Appendix B of the plan.
 
-Theo `references/master-plan.md`, dùng `references/doc-catalog.md` để chọn tài liệu. Thứ tự viết: §1 (từ sổ quyết định) → §3 (cây và nội dung bắt buộc, cụ thể theo dự án) → §4 → §5 → §6 → §2, §7, §8, §9 → phụ lục A (từ `references/templates.md`).
+### 4. Write the decision register
 
-Ràng buộc chéo phải giữ:
+Follow `references/decision-register.md`. Walk the SDD section by section with the gap-hunting checklist, reading closely enough to catch contradictions inside the SDD. Each DR has a proposed decision **concrete enough to code from** (DDL, JSON, tables, defaults with units). Mark ⚠ when it deviates from the SDD, 🔬 when it needs a spike. Each DR has a "Write to" line pointing to DOCs/ADRs that will exist in the plan. End with "Summary by impact". Document status `Review`; every DR `Proposed`. The first decision-log line records the language choice.
 
-- Mỗi "Ghi vào" của DR trỏ tới một DOC có trong cây §3.1 hoặc một ADR trong bảng ADR.
-- Mỗi DR cấp kiến trúc có một ADR; mỗi ADR có nguồn (DR hoặc SDD §).
-- Mỗi DR 🔬 có một spike `S-xx` trong Phase 0.
-- Mỗi phase có `Pn-00` doc gate liệt kê đúng các DOC/ADR có gate = Pn, và có tiêu chí thoát `Mn` kiểm chứng được.
-- Mỗi việc trỏ tới DOC chứa thiết kế của nó; mỗi DOC thiết kế được ít nhất một việc dùng.
-- Ma trận §6 có mọi FR và NFR; FR nào cũng có việc và cách kiểm chứng.
-- Phase 0 có việc "Viết DOC-…" theo thứ tự: glossary → product → kiến trúc + ADR gate P1 → data → ops nền.
+Long file: write the skeleton first, then add one group at a time with Edit; never dump the whole file in one write.
 
-### 6. Viết `docs/README.md`
+### 5. Write the master plan
 
-Theo template B.6. Mọi DOC ở trạng thái "Chưa viết".
+Follow `references/master-plan.md`, using `references/doc-catalog.md` to choose documents. Order: §0 with 0.1 Language → §1 (from the register) → §3 (tree and project-specific required content) → §4 → §5 → §6 → §2, §7, §8, §9 → Appendix A (templates rendered in the output language) → Appendix B when the vocabulary was generated.
 
-### 7. Kiểm tra và báo cáo
+Cross-checks that must hold:
 
-- Chạy `python3 <skill-dir>/scripts/check_docs.py docs`. Sửa mọi E2 (link hỏng) và mọi E1 với mã do plan hoặc sổ quyết định định nghĩa (`DR-`, `DOC-`, `Pn-`, `S-`, `UC-`). E1 với mã sẽ được định nghĩa trong tài liệu chưa viết (`FR-xx.y`, `EXP-`, `E-`, `RB-`…) là bình thường ở bước này. Dòng I1 "DOC … without a file yet" chỉ là thông tin.
-- Tự soát lại danh sách ràng buộc ở bước 5.
-- Báo cáo ngắn: số DR (bao nhiêu ⚠, bao nhiêu 🔬), 5–8 khoảng trống nặng nhất, số DOC/ADR/phase/việc, các DR chặn P1 cần Owner xem trước. Bước tiếp theo: Owner duyệt DR (chấp nhận hết, hoặc nêu DR cần đổi) rồi chạy `/docs-master-plan apply-decisions`; sau đó dùng `/docs-project`.
+- Every DR "Write to" points to a DOC in the §3.1 tree or an ADR in the ADR table.
+- Every architecture-level DR has an ADR; every ADR has a source (DR or SDD §).
+- Every 🔬 DR has a spike `S-xx` in Phase 0.
+- Every phase has a `Pn-00` doc gate listing exactly the DOCs/ADRs gated by Pn, and checkable exit criteria `Mn`.
+- Every task points to the DOC holding its design; every design DOC is used by at least one task.
+- §6 has every FR and NFR; every FR has tasks and a verification.
+- Phase 0 has "Write DOC-…" tasks in this order: glossary → product → architecture + P1 ADRs → data → foundation ops docs.
 
-Không commit trừ khi người dùng yêu cầu.
+### 6. Write `docs/README.md`
+
+Template B.6, in the output language. Every DOC is "Not written" (`readme.not_written`).
+
+### 7. Check and report
+
+- Run `python3 <skill-dir>/scripts/check_docs.py docs`. Fix every E2 (broken link) and every E1 for IDs the plan or register defines (`DR-`, `DOC-`, `Pn-`, `S-`, `UC-`). E1 for IDs that unwritten documents will define (`FR-xx.y`, `EXP-`, `E-`, `RB-`…) is expected at this stage. The I1 line "DOC … without a file yet" is informational.
+- Re-check the cross-checks of step 5.
+- Short report: number of DRs (how many ⚠, how many 🔬), the 5–8 heaviest gaps, counts of DOCs/ADRs/phases/tasks, the P1-blocking DRs the Owner should read first, the recorded language. Next step: the Owner reviews the DRs (accept all, or name the ones to change), then `/docs-master-plan apply-decisions`; after that `/docs-project`.
+
+Do not commit unless the user asks.
 
 ### 8. `apply-decisions`
 
-Khi Owner trả lời:
+When the Owner answers:
 
-- Mỗi DR được chốt: tiêu đề thêm `— **Chốt**` (hoặc `**Chốt: <lựa chọn>**`); DR bị đổi: ghi phương án mới vào mục Quyết định, giữ phương án cũ dạng "*Đổi YYYY-MM-DD:* …".
-- Thêm dòng vào "Nhật ký chốt" (ngày, người chốt, nội dung, mục bị ảnh hưởng). Chấp nhận gộp thì ghi một dòng "Chấp nhận toàn bộ các đề xuất còn lại".
-- Lan quyết định sang master plan (§1.2, §1.3, nội dung bắt buộc, việc, rủi ro) nếu nó làm thay đổi chúng.
-- Khi mọi DR chặn P1 đã chốt và Owner duyệt plan: plan chuyển `Approved v1.0`, việc P0-01 ghi xong.
+- Each decided DR: append `— **<dr.decided>**` (or `**<dr.decided>: <choice>**`) to its title; a changed DR: write the new option in the Decision field and keep the old one as "*<dr.changed> YYYY-MM-DD:* …".
+- Add decision-log lines (date, decided by, content, affected items). A bulk acceptance is one line: "Accept all remaining proposals".
+- Propagate decisions into the master plan (§1.2, §1.3, required content, tasks, risks) when they change them.
+- When every P1-blocking DR is decided and the Owner approves the plan: the plan becomes `Approved v1.0` and task P0-01 is marked done.
+
+All of this is written in the output language recorded in §0.1.

@@ -1,100 +1,110 @@
 ---
 name: docs-project
-description: Viết, duyệt và theo dõi bộ tài liệu dự án (DOC-xx, ADR, runbook, thực nghiệm, đặc tả màn hình…) theo master plan đã lập bằng skill docs-master-plan. Mỗi tài liệu bám đúng "nội dung bắt buộc" và gate trong master plan §3.2, dùng quyết định trong docs/00-decision-register.md, ghi quyết định mới thành DR. Dùng khi người dùng muốn "viết DOC-xx", "viết docs cho gate P1", "viết tài liệu tiếp theo", "duyệt tài liệu", "kiểm tra docs", "trạng thái docs".
+description: Writes, reviews and tracks the project documents (DOC-xx, ADRs, runbooks, experiments, screen specs…) defined by a master plan made with the docs-master-plan skill. Each document follows its required content and gate in master plan §3.2, uses the decisions in docs/00-decision-register.md, records new decisions as DRs, and is written in the output language recorded in the plan. Use when the user wants to write a specific DOC, write all docs of a gate, write the next document, review documents against the Approved definition, check the docs tree, or see documentation status (also in Vietnamese, e.g. "viết DOC-xx", "viết docs cho gate P1", "duyệt tài liệu").
 argument-hint: "<DOC-xx …> | gate <Pn> | next | review <DOC-xx|all> | status"
 license: MIT
 ---
 
-# Viết docs theo master plan
+# Write the docs from the master plan
 
-Điều kiện: đã có `docs/00-master-plan.md` và `docs/00-decision-register.md` (do skill `docs-master-plan` tạo). Chưa có thì dừng và đề nghị chạy `/docs-master-plan <sdd.md>` trước.
+Precondition: `docs/00-master-plan.md` and `docs/00-decision-register.md` exist (made by `docs-master-plan`). If not, stop and suggest `/docs-master-plan <sdd.md>` first.
 
-Thứ tự ưu tiên khi các nguồn lệch nhau: **master plan** (nội dung bắt buộc, gate, mã) → **sổ quyết định** (DR đã Chốt) → **SDD gốc** → tham chiếu của skill này.
+When sources disagree, priority is: **master plan** (required content, gates, IDs, language) → **decision register** (decided DRs) → **original SDD** → this skill's references.
 
-Tham chiếu:
+`<skill-dir>` in commands below is the directory containing this SKILL.md. Scripts need Python 3.10+.
 
-- [references/conventions.md](references/conventions.md): mã, khối đầu file, trạng thái, quyết định, ngôn ngữ, văn phong, một nguồn sự thật. Đọc trước khi viết tài liệu đầu tiên của phiên.
-- [references/doc-guide.md](references/doc-guide.md): tài liệu tốt trông thế nào theo từng loại.
-- [references/templates.md](references/templates.md): khung tài liệu (A.x giống phụ lục A của plan, B.x cho các loại còn lại).
-- `scripts/check_docs.py [docs_dir] [--strict]`: kiểm tra mã định danh, link, khối trạng thái, câu hỏi còn mở. Cần Python 3.10+. `<skill-dir>` trong các lệnh là thư mục chứa file SKILL.md này.
+References:
 
-## Chế độ
+- [references/language.md](references/language.md): output language and vocabulary.
+- [references/conventions.md](references/conventions.md): IDs, header block, statuses, decisions, style, single source of truth. Read before the first document of a session.
+- [references/doc-guide.md](references/doc-guide.md): what a good document of each kind looks like.
+- [references/templates.md](references/templates.md): document skeletons (A.x as in Appendix A of the plan, B.x for the rest).
+- `locales/<code>.md`: vocabulary per language.
+- `scripts/check_docs.py [docs_dir] [--strict] [--vocab FILE]`: checks IDs, links, status lines, open questions.
 
-| Lệnh | Việc |
+## Modes
+
+| Command | Does |
 | --- | --- |
-| `/docs-project DOC-06 DOC-03` | Viết các tài liệu được nêu, theo thứ tự |
-| `/docs-project gate P1` | Viết mọi tài liệu và ADR có gate P1 chưa có, theo thứ tự phụ thuộc |
-| `/docs-project next` | Viết tài liệu kế tiếp theo các việc "Viết DOC-…" của Phase 0 và §9 của plan |
-| `/docs-project review <DOC-xx\|all>` | Duyệt theo định nghĩa Approved, không sửa trạng thái |
-| `/docs-project status` | Bảng DOC × gate × trạng thái, tài liệu đang chặn gate kế tiếp |
+| `/docs-project DOC-06 DOC-03` | Write the named documents, in order |
+| `/docs-project gate P1` | Write every missing document and ADR gated by P1, in dependency order |
+| `/docs-project next` | Write the next document of the "Write DOC-…" tasks of Phase 0 and §9 of the plan |
+| `/docs-project review <DOC-xx\|all>` | Review against the Approved definition; does not change statuses |
+| `/docs-project status` | DOC × gate × status table and the documents blocking the next gate |
 
-## Viết một tài liệu
+## Language (every session, before writing)
 
-### 1. Thu thập đầu vào
+Read master plan §0.1. It names the output language and the vocabulary source (`locales/<code>.md` or Appendix B of the plan). Load that vocabulary and its Conventions; write every heading, label and sentence in that language.
 
-- Hàng của DOC trong master plan §3.2: chép "Nội dung bắt buộc" thành checklist. Đây là định nghĩa của "đủ".
-- Các DR có `Ghi vào:` nhắc tới DOC này (`grep -n "DOC-xx" docs/00-decision-register.md`), và DR mà nội dung bắt buộc nêu tên. Đọc toàn văn từng DR.
-- Các mục SDD gốc liên quan.
-- Tài liệu đã có mà DOC này phụ thuộc. Glossary luôn đọc.
-- Các việc `Pn-xx` trỏ tới DOC này: chúng cho biết người đọc sẽ làm gì với tài liệu.
+If §0.1 is missing (a plan made before this rule), **ask the user** for the output language and the code/UI language (`language.md` §1), add the block to §0 of the plan, add Appendix B if the vocabulary has to be generated, and add a decision-log line. Then continue. Never ask again once §0.1 exists.
 
-**Definition of Ready:** DR liên quan còn ở `Đề xuất` thì báo người dùng. Được đồng ý thì viết theo đề xuất và giữ tài liệu ở `Draft`.
+## Writing one document
 
-### 2. Dàn ý
+### 1. Gather inputs
 
-Từ checklist và khung trong templates.md / doc-guide.md, lập danh sách mục. Mỗi ý bắt buộc phải nằm ở một mục cụ thể. Tài liệu lớn (danh mục endpoint, thiết kế lõi): ghi khung trước, rồi viết từng mục bằng Edit.
+- The DOC's row in master plan §3.2: copy "Required content" into a checklist. This defines "complete".
+- DRs whose "Write to" names this DOC (`grep -n "DOC-xx" docs/00-decision-register.md`) and DRs the required content names. Read each in full.
+- The relevant sections of the original SDD.
+- Existing documents this one depends on. Always read the glossary.
+- The tasks `Pn-xx` that point to this DOC: they say what the reader will do with it.
 
-### 3. Viết
+**Definition of Ready:** if a related DR is still proposed, tell the user. With their agreement, write according to the proposal and keep the document `Draft`.
 
-- Khối đầu file đúng conventions.md §2, trạng thái `Draft` trong lúc viết.
-- Cụ thể, có ví dụ, có số liệu, dẫn nguồn `(DR-xx)`, `(SDD §x)`, `(DOC-yy §z)`.
-- Mã mới (FR con, E-xx, DQ-xx, tiền tố test…) cấp theo conventions.md §1; tiền tố test mới phải chưa bị dùng (`grep -rn "| <X>-01" docs/`).
+### 2. Outline
 
-### 4. Quyết định phát sinh
+From the checklist and the skeletons in `templates.md` / `doc-guide.md`, list the sections. Each required item belongs to one specific section. For large documents (endpoint catalog, core design), write the skeleton first, then fill one section at a time with Edit.
 
-Gặp lựa chọn mà SDD và DR chưa trả lời:
+### 3. Write
 
-- Owner đã ủy quyền (Nhật ký chốt có ghi, hoặc người dùng nói vậy): thêm DR mới với số kế tiếp, trạng thái `Chốt`, người chốt `Claude (Owner ủy quyền)`, thêm dòng vào Nhật ký chốt, `Ghi vào` gồm DOC đang viết. Quyết định ở cấp kiến trúc thì viết thêm ADR và cập nhật `04-adr/README.md` và bảng ADR của plan.
-- Chưa ủy quyền: thêm DR `Đề xuất`, ghi câu hỏi vào "Câu hỏi còn mở" kèm mã DR; tài liệu dừng ở `Draft`.
-- Quyết định làm thay đổi tài liệu đã Approved: sửa tài liệu đó trong cùng lần, ghi `*Sửa YYYY-MM-DD (DR-xx):* …` tại chỗ sửa và cập nhật ngày ở khối đầu.
+- Header block per `conventions.md` §2, status `Draft` while writing.
+- Concrete, with examples and numbers, citing `(DR-xx)`, `(original SDD §x)`, `(DOC-yy §z)`.
+- New IDs (FR sub-items, E-xx, DQ-xx, test prefixes…) follow `conventions.md` §1; a new test prefix must be unused (`grep -rn "| <X>-01" docs/`).
 
-### 5. Lan sang tài liệu nguồn
+### 4. Decisions made while writing
 
-- Thuật ngữ mới → glossary.
-- Key cấu hình mới → configuration-reference; metric/alert mới → observability (nếu các tài liệu này đã có; chưa có thì liệt kê trong báo cáo để thêm khi viết chúng).
-- Mã test mới → bảng chỉ mục tiền tố của test-strategy (nếu đã có).
+When a choice is not answered by the SDD or the DRs:
 
-### 6. Hoàn tất
+- Owner has delegated (the decision log says so, or the user said so): add a DR with the next number, state decided, decided by `dr.delegated`, a decision-log line, and "Write to" including this DOC. An architecture-level decision also gets an ADR, plus an update to `04-adr/README.md` and the plan's ADR table.
+- Not delegated: add a proposed DR and put the question under "Open questions" with the DR ID; the document stays `Draft`.
+- A decision that changes an Approved document: edit that document in the same change, mark the spot `*<dr.revised> (DR-xx):* …` and update its header date.
 
-- Đánh dấu checklist: ý nào ở mục nào. Thiếu thì viết tiếp, không bỏ qua.
-- Trạng thái → `Review` (chỉ `Approved` khi Owner duyệt hoặc đã ủy quyền duyệt).
-- Cập nhật bảng trạng thái trong `docs/README.md` và ghi chú tiến độ ở việc tương ứng của master plan (ví dụ `P0-09 Viết DOC-01…05 — **Review 2026-10-06**`).
-- Chạy `python3 <skill-dir>/scripts/check_docs.py docs`; sửa mọi E1/E2 do tài liệu mới gây ra. E1 trỏ tới tài liệu chưa viết là bình thường trong lúc làm theo gate; nêu trong báo cáo.
-- Báo cáo ngắn: tài liệu đã viết, DR mới (số, tiêu đề, đã chốt hay đề xuất), câu hỏi còn mở, việc cần lan sang tài liệu chưa có.
+### 5. Propagate to source documents
 
-Không commit trừ khi người dùng yêu cầu.
+- New term → glossary.
+- New configuration key → configuration reference; new metric/alert → observability (if those exist; otherwise list them in the report to add later).
+- New test IDs → the prefix index of the test strategy (if it exists).
 
-## Viết nhiều tài liệu (gate)
+### 6. Finish
 
-- Thứ tự: glossary → product (vision → personas → requirements → use cases → feature catalog) → kiến trúc → ADR → data → thiết kế → API → UX/UI → operations → testing. Bên trong một gate, tài liệu bị phụ thuộc viết trước.
-- Glossary và requirements luôn do tác tử chính viết. Sau khi chúng có, các tài liệu **độc lập nhau** trong cùng gate có thể giao song song cho subagent (fork, tối đa 4–5 cùng lúc). Mỗi subagent:
-  - chỉ ghi file tài liệu của nó;
-  - **không** sửa sổ quyết định, glossary, README, master plan, configuration-reference, observability;
-  - quyết định mới ghi tạm là `DR-NEW-<tên-tài-liệu>-<n>` trong tài liệu, và trả về: danh sách DR đề xuất (đầy đủ Vấn đề/Quyết định/Hệ quả), thuật ngữ mới, key cấu hình mới, metric mới, mã test đã dùng.
-- Tác tử chính gộp kết quả: cấp số DR thật theo thứ tự và thay mọi `DR-NEW-…`, cập nhật glossary và các tài liệu nguồn, rồi đọc chéo để thống nhất tên bảng, key, mã E-xx giữa các tài liệu (`grep` các tên chính). Cuối cùng chạy check_docs.py.
+- Tick the checklist: which item is in which section. Anything missing gets written, not skipped.
+- Status → `Review` (`Approved` only when the Owner approves or has delegated approval).
+- Update the status table in `docs/README.md` and the progress note of the matching plan task (e.g. `P0-09 Write DOC-01…05 — **Review 2026-10-06**`, in the output language).
+- Run `python3 <skill-dir>/scripts/check_docs.py docs`; fix every E1/E2 caused by the new document. E1 for documents not written yet is normal while working through a gate; mention it in the report.
+- Short report: documents written, new DRs (ID, title, decided or proposed), open questions, propagation still owed to documents that do not exist yet.
 
-## Duyệt (`review`)
+Do not commit unless the user asks.
 
-Với từng tài liệu, kiểm năm điều của định nghĩa Approved (conventions.md §3):
+## Writing many documents (a gate)
 
-1. So từng ý trong "Nội dung bắt buộc" của plan với mục trong tài liệu; liệt kê ý thiếu.
-2. "Câu hỏi còn mở" rỗng, hoặc mỗi câu có DR đã Chốt.
-3. Thuật ngữ chuyên môn dùng trong tài liệu có trong glossary; mã trỏ tới mục có thật (check_docs.py).
-4. Khối đầu có đủ phụ thuộc.
-5. Chỗ có thể hiểu theo hai cách có ví dụ cụ thể.
+- Order: glossary → product (vision → personas → requirements → use cases → feature catalog) → architecture → ADRs → data → design → API → UX/UI → operations → testing. Within a gate, documents others depend on come first.
+- The glossary and requirements are always written by the main agent. After them, documents of the same gate that do **not depend on each other** may be handed to subagents in parallel (fork, at most 4–5 at a time). Each subagent:
+  - writes only its own document file, in the output language with the vocabulary of §0.1;
+  - does **not** edit the decision register, glossary, README, master plan, configuration reference or observability;
+  - marks new decisions as `DR-NEW-<doc>-<n>` inside its document and returns: proposed DRs (full Problem/Decision/Consequences), new terms, new configuration keys, new metrics, test IDs used.
+- The main agent merges: assigns real DR numbers in order and replaces every `DR-NEW-…`, updates the glossary and source documents, then cross-reads for consistent table names, keys and `E-xx` IDs (`grep` the main names). Finally runs check_docs.py.
 
-Thêm: mâu thuẫn với DR đã Chốt hoặc với tài liệu khác (tên bảng, key, ngưỡng, mã lỗi); key/metric chưa có trong tài liệu nguồn. Báo cáo dạng danh sách `DOC-xx §n: vấn đề → cách sửa`. Không đổi trạng thái; khi Owner duyệt mới chuyển `Approved`, cập nhật README, việc doc gate `Pn-00` của plan, và Nhật ký chốt nếu duyệt gộp.
+## Review (`review`)
 
-## Trạng thái (`status`)
+For each document, check the five points of the Approved definition (`conventions.md` §3):
 
-Đọc §3.1–3.2 của plan, khối đầu mọi file trong `docs/`, chạy check_docs.py. In bảng `DOC · Tài liệu · Gate · Trạng thái`, rồi gate kế tiếp và các DOC/ADR đang chặn nó.
+1. Compare every item of the plan's "Required content" with the document's sections; list what is missing.
+2. "Open questions" is empty, or every question has a decided DR.
+3. Domain terms used are in the glossary; IDs point to real items (check_docs.py).
+4. The header lists its dependencies.
+5. Ambiguous places have concrete examples.
+
+Also: contradictions with decided DRs or other documents (table names, keys, thresholds, error codes); keys or metrics missing from their source documents; text not in the output language. Report as `DOC-xx §n: problem → fix`. Do not change statuses; only when the Owner approves, move to `Approved` and update the README, the plan's `Pn-00` doc-gate task, and the decision log if approval is in bulk.
+
+## Status (`status`)
+
+Read §3.1–3.2 of the plan and the header of every file under `docs/`, run check_docs.py. Print a table `DOC · Document · Gate · Status`, then the next gate and the DOCs/ADRs blocking it.

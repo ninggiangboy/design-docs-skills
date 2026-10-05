@@ -1,148 +1,155 @@
 # design-docs-skills
 
-Bộ ba agent skill đi từ ý tưởng tới bộ tài liệu thiết kế đủ để code mà không phải hỏi thêm: **SDD → sổ quyết định và master plan → bộ docs theo doc gate**.
-
-*Three agent skills that take a project from an idea to an implementation-ready doc set: system design document → decision register and master plan → gated project docs. Skill content is written in Vietnamese.*
+Three agent skills that take a project from an idea to a documentation set complete enough to implement without asking: **system design document → decision register and master plan → gated project docs**. The documents are written in the language you choose; templates and fixed labels ship for eight languages, and any other language works through a generated vocabulary.
 
 ```mermaid
 flowchart LR
-    I["Ý tưởng, ghi chú"] --> S["/docs-system-design<br/>viết và sửa SDD"]
-    S --> P["/docs-master-plan<br/>sổ quyết định + master plan"]
-    P --> D["/docs-project<br/>viết docs theo gate"]
-    D --> C["Code theo plan và docs"]
-    S -. "sửa nhiều lượt" .-> S
-    P -. "Owner chốt DR" .-> P
+    I["Idea, notes"] --> S["/docs-system-design<br/>write and revise the SDD"]
+    S --> P["/docs-master-plan<br/>decision register + master plan"]
+    P --> D["/docs-project<br/>write docs gate by gate"]
+    D --> C["Implement from plan and docs"]
+    S -. "many revision rounds" .-> S
+    P -. "Owner decides DRs" .-> P
 ```
 
-| Skill | Đầu vào | Đầu ra |
+| Skill | Input | Output |
 | --- | --- | --- |
-| `docs-system-design` | Ý tưởng, ghi chú, hoặc một SDD có sẵn | `<du-an>-sdd.md`: bối cảnh, bài toán cốt lõi, phạm vi, yêu cầu, kiến trúc, các mục miền đi sâu (bất biến, máy trạng thái, tranh chấp, phân tích phương án), dữ liệu, API, giao diện, chịu lỗi, thực nghiệm, kế hoạch, rủi ro. Sửa được qua nhiều lượt trong cùng phiên |
-| `docs-master-plan` | File SDD | `docs/00-decision-register.md` (mỗi chỗ SDD chưa nói "chính xác như thế nào" là một DR có phương án đề xuất), `docs/00-master-plan.md` (tài liệu cần viết kèm nội dung bắt buộc và gate, việc từng phase kèm tiêu chí nghiệm thu, ma trận truy vết), `docs/README.md` |
-| `docs-project` | Master plan và sổ quyết định | Các tài liệu `DOC-xx`, ADR, runbook, thực nghiệm, đặc tả màn hình…, viết theo đúng nội dung bắt buộc và gate trong plan |
+| `docs-system-design` | An idea, notes, or an existing SDD | `<project>-sdd.md`: context, core problem, scope, requirements, architecture, deep domain sections (invariants, state machines, races, options analysis), data, API, UI, fault tolerance, experiments, plan, risks. Revised over many turns in the same session |
+| `docs-master-plan` | The SDD | `docs/00-decision-register.md` (every place the SDD does not say "exactly how" becomes a DR with a proposed option), `docs/00-master-plan.md` (documents to write with required content and gates, tasks per phase with acceptance criteria, traceability matrix), `docs/README.md` |
+| `docs-project` | The master plan and decision register | The `DOC-xx` documents, ADRs, runbooks, experiments, screen specs…, each matching its required content and gate in the plan |
 
-## Cài đặt
+## Install
 
-Cần [Node.js](https://nodejs.org) cho `npx`, và Python 3.10+ cho các script kiểm tra đi kèm skill.
+Requires [Node.js](https://nodejs.org) for `npx`, and Python 3.10+ for the checker scripts bundled with the skills.
 
 ```bash
-# Cài cả ba skill cho Claude Code, dùng ở mọi dự án
+# All three skills for Claude Code, available in every project
 npx skills add ninggiangboy/design-docs-skills -g -a claude-code
 
-# Chỉ cài vào dự án hiện tại (.claude/skills/), để commit cùng repo
+# Only for the current project (.claude/skills/), committed with the repo
 npx skills add ninggiangboy/design-docs-skills -a claude-code
 
-# Chọn từng skill
+# Pick individual skills
 npx skills add ninggiangboy/design-docs-skills --skill docs-system-design
 
-# Xem danh sách skill trong repo
+# List the skills in this repository
 npx skills add ninggiangboy/design-docs-skills --list
 
-# Cập nhật, gỡ
+# Update, remove
 npx skills update
 npx skills remove docs-system-design docs-master-plan docs-project
 ```
 
-`npx skills` cài được cho cả agent khác (Codex, Cursor, OpenCode, Gemini CLI…): bỏ `-a claude-code` để chọn trong danh sách.
+`npx skills` also installs for other agents (Codex, Cursor, OpenCode, Gemini CLI…): drop `-a claude-code` to choose from a list.
 
-Cài tay:
+Manual install:
 
 ```bash
 git clone https://github.com/ninggiangboy/design-docs-skills.git
 cp -r design-docs-skills/skills/* ~/.claude/skills/
 ```
 
-## Cách dùng
+## Usage
 
-### 1. Viết SDD
-
-```text
-/docs-system-design Hệ thống quản lý kho cho chuỗi cửa hàng, đồ án tốt nghiệp,
-trọng tâm là đồng bộ tồn kho giữa các chi nhánh khi mất mạng.
-```
-
-Skill hỏi những điều làm thay đổi thiết kế, gửi dàn ý để duyệt, rồi viết từng mục. Sau đó cứ nói tiếp trong cùng phiên, mỗi lượt skill đọc lại file, sửa tối thiểu và sửa theo mọi chỗ bị ảnh hưởng:
+### 1. Write the SDD
 
 ```text
-Mục 8 thêm phân tích phương án: CRDT, event sourcing, khóa trung tâm.
-Giữ hàng 15 phút thay vì 10.
-Dời phòng chờ sang "Để sau".
-Rà lại toàn bộ cho nhất quán.
+/docs-system-design An inventory system for a chain of stores, a graduation thesis,
+focused on keeping stock consistent between branches while offline.
 ```
 
-### 2. Lập sổ quyết định và master plan
+The skill first asks which language to write in, then asks only what changes the design, sends an outline for approval, and writes section by section. Keep talking in the same session; each turn re-reads the file, edits minimally, and updates everything the change affects:
 
 ```text
-/docs-master-plan warehouse-sdd.md
+Add an options analysis to section 8: CRDTs, event sourcing, a central lock.
+Hold stock for 15 minutes instead of 10.
+Move the waiting room to "Later".
+Run a full consistency pass.
 ```
 
-Đọc các DR, rồi chốt:
+### 2. Build the decision register and master plan
+
+```text
+/docs-master-plan inventory-sdd.md
+```
+
+The skill always asks for the document language and the language of code, UI and commits, and records both in §0.1 of the plan. Read the DRs, then decide:
 
 ```text
 /docs-master-plan apply-decisions
-Chấp nhận toàn bộ đề xuất, trừ DR-07: dùng RabbitMQ thay Kafka.
+Accept every proposal except DR-07: use RabbitMQ instead of Kafka.
 ```
 
-### 3. Viết docs theo plan
+### 3. Write the docs from the plan
 
 ```text
-/docs-project next          # tài liệu kế tiếp theo Phase 0
-/docs-project gate P1       # mọi tài liệu có gate P1
-/docs-project DOC-14        # một tài liệu cụ thể
-/docs-project review all    # soát theo định nghĩa Approved
-/docs-project status        # bảng DOC × gate × trạng thái
+/docs-project next          # next document from Phase 0
+/docs-project gate P1       # every document gated by P1
+/docs-project DOC-14        # one specific document
+/docs-project review all    # review against the Approved definition
+/docs-project status        # DOC × gate × status table
 ```
 
-### Kết quả
+### Result
 
 ```text
-<du-an>-sdd.md
+<project>-sdd.md
 docs/
   README.md
   00-master-plan.md
   00-decision-register.md
-  01-product/        vision, persona, requirements, use case, feature catalog
+  01-product/        vision, personas, requirements, use cases, feature catalog
   02-glossary.md
-  03-architecture/   context và container, luồng dữ liệu, contract, quality attributes, stack
+  03-architecture/   context and containers, data flows, contracts, quality attributes, stack
   04-adr/
-  05-data/           nguồn, mô hình dữ liệu, DQ rule, phân quyền DB, vòng đời
-  06-design/         mỗi thành phần một tài liệu, cùng security, observability, config, lỗi
+  05-data/           sources, data model, data quality rules, DB roles, lifecycle
+  06-design/         one document per component, plus security, observability, configuration, errors
   07-api/
-  08-ux-ui/          IA, design system, mỗi màn hình một file, microcopy
-  09-operations/     dev local, deploy, CI/CD, runbook, backup
-  10-testing/        test strategy, thực nghiệm, demo script
+  08-ux-ui/          IA, design system, one file per screen, microcopy
+  09-operations/     local dev, deployment, CI/CD, runbooks, backup
+  10-testing/        test strategy, experiments, demo script
 ```
 
-Nhóm nào không áp dụng (không có UI, không có AI, không có thực nghiệm…) thì master plan tự bỏ.
+Groups that do not apply (no UI, no AI, no experiments…) are left out by the master plan.
 
-## Phương pháp
+## Languages
 
-- **Doc gate.** Mỗi phase có việc `Pn-00`: phase chỉ bắt đầu khi các tài liệu nó cần đã `Approved`.
-- **Sổ quyết định.** Không quyết định ngầm trong thân tài liệu: mọi lựa chọn chưa có trong SDD là một DR có trạng thái `Đề xuất → Chốt/Đổi`, ghi người chốt và tài liệu đích. DR cấp kiến trúc thành ADR.
-- **Mã định danh thống nhất.** `FR`, `NFR`, `UC`, `F-<NHÓM>`, `DOC`, `ADR`, `DR`, `Pn-xx`, `S`, `E`, `DQ`, `EXP`, `RB`, tiền tố test riêng cho từng tài liệu. Script kiểm tra mọi mã được trỏ tới đều có định nghĩa.
-- **Một nguồn sự thật.** Thuật ngữ ở glossary, key cấu hình ở configuration reference, metric ở observability, bảng ở tài liệu data, endpoint ở danh mục API.
-- **Ngôn ngữ.** Mặc định `docs/` viết theo ngôn ngữ của SDD (thường là tiếng Việt); code, UI, log, commit bằng tiếng Anh. Đổi được khi lập plan.
+Asked once per project, on first use, even when it looks obvious; recorded in master plan §0.1 and used by every later step.
 
-Khung tài liệu rút từ hai dự án thật: một pipeline dữ liệu cho đồ án nghiên cứu (49 tài liệu, 32 ADR, khoảng 110 DR) và một hệ đặt vé chịu tải cao.
+- **Shipped vocabularies** in `skills/*/locales/`: English (`en`), Vietnamese (`vi`), Japanese (`ja`), Simplified Chinese (`zh`), Korean (`ko`), French (`fr`), Spanish (`es`), German (`de`). Each maps the 263 fixed headings and labels of the templates (SDD sections, master plan, decision register, ADR, use case, endpoint, screen, experiment, runbook…) and lists number, date and punctuation conventions.
+- **Any other language**: the skill translates the English vocabulary itself and stores it as Appendix B of the master plan, so every document keeps the same terms. The checker scripts read that appendix too.
+- IDs (`FR-01`, `DOC-14`), status values (`Draft`, `Approved`…), code, file and folder names stay the same in every language.
 
-## Cấu trúc repo
+To add a shipped language, copy `locales/en.md` in `skills/docs-master-plan/`, add a third column, fill the Conventions section, and run `python3 scripts/validate.py --fix`.
+
+## Method
+
+- **Doc gates.** Every phase has a task `Pn-00`: a phase starts only when the documents it needs are `Approved`.
+- **Decision register.** No silent decisions inside documents: every choice the SDD does not make is a DR (`Proposed → Decided / Changed`) with who decided it and which documents it goes into. Architecture-level DRs become ADRs.
+- **Stable identifiers.** `FR`, `NFR`, `UC`, `F-<GROUP>`, `DOC`, `ADR`, `DR`, `Pn-xx`, `S`, `E`, `DQ`, `EXP`, `RB`, and one test-ID prefix per document. The checker verifies every referenced ID is defined.
+- **Single source of truth.** Terms in the glossary, configuration keys in the configuration reference, metrics in observability, tables in the data documents, endpoints in the API catalog.
+
+The structure was distilled from two real projects: a research data pipeline (49 documents, 32 ADRs, about 110 DRs) and a ticket booking system built for correctness under high load.
+
+## Repository layout
 
 ```text
 skills/
-  docs-system-design/   SKILL.md, references/ (structure, style, revision), scripts/check_sdd.py
-  docs-master-plan/     SKILL.md, references/ (conventions, decision-register, doc-catalog, master-plan, templates), scripts/check_docs.py
-  docs-project/         SKILL.md, references/ (conventions, doc-guide, templates), scripts/check_docs.py
-scripts/validate.py     kiểm tra frontmatter, link, file dùng chung, và chạy script kiểm tra trên fixture
-tests/fixtures/         SDD và cây docs mẫu, cả bản đúng lẫn bản hỏng
+  docs-system-design/   SKILL.md, references/ (language, structure, style, revision), locales/, scripts/check_sdd.py
+  docs-master-plan/     SKILL.md, references/ (language, conventions, decision-register, doc-catalog, master-plan, templates), locales/, scripts/check_docs.py
+  docs-project/         SKILL.md, references/ (language, conventions, doc-guide, templates), locales/, scripts/check_docs.py
+scripts/validate.py     frontmatter, links, locale consistency, shared-file sync, checker scripts on fixtures
+tests/fixtures/         sample SDDs and docs trees, valid and broken, in several languages
 ```
 
-Mỗi skill tự chứa đủ file để cài riêng lẻ, nên `conventions.md`, `templates.md` và `check_docs.py` có hai bản. Bản gốc nằm ở `docs-master-plan`; sửa ở đó rồi chạy:
+Each skill is self-contained so it can be installed alone; shared files (`locales/`, `language.md`, `conventions.md`, `templates.md`, `check_docs.py`) therefore exist in more than one skill. The source copy lives in `docs-master-plan`; edit it there, then:
 
 ```bash
-python3 scripts/validate.py --fix   # chép file dùng chung sang docs-project
-python3 scripts/validate.py         # CI chạy lệnh này trên mỗi push và PR
+python3 scripts/validate.py --fix   # copy shared files to the other skills
+python3 scripts/validate.py         # CI runs this on every push and pull request
 ```
 
-Các script kiểm tra cũng chạy được độc lập:
+The checker scripts also run standalone:
 
 ```bash
 python3 skills/docs-system-design/scripts/check_sdd.py my-sdd.md --outline
