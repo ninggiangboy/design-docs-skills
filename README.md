@@ -20,7 +20,7 @@ flowchart LR
 | `docs-master-plan` | The SDD | `docs/00-decision-register.md` (every place the SDD does not say "exactly how" becomes a DR with a proposed option), `docs/00-master-plan.md` (documents to write with required content and gates, tasks per phase with acceptance criteria, traceability matrix), `docs/README.md` |
 | `docs-project` | The master plan and decision register | The `DOC-xx` documents, ADRs, runbooks, experiments, screen specs…, each matching its required content and gate in the plan |
 | `docs-explain` | A task, feature, use case, flow, endpoint or screen, and the developer's questions | A brief in chat (what and why, done means, read first, how it works, contracts, rules, code to create, readiness, gaps) and cited answers; unanswered questions become proposed DRs when you agree |
-| `docs-explain-kid` | The same, for a junior or less technical developer | The same facts and rules, explained from zero: everyday analogies, tiny examples, data before and after, concept cards (database, transaction, index, HTTP, Redis, nginx, queues, race conditions…), small steps each with how to check it and the usual mistake |
+| `docs-explain-kid` | The same, for a junior or less technical developer | The same facts and rules, explained from zero where beginners go wrong: everyday analogies, tiny examples, ASCII diagrams (who talks to whom, steps in time, race timelines, state changes, layer maps, wireframes), data before and after, concept cards (database, transaction, index, Redis, nginx, queues, race conditions…; web basics are assumed), small steps each with how to check it and the usual mistake, and numbered questions to ask next |
 
 ## Install
 
@@ -112,6 +112,7 @@ For a developer who is still learning the basics, `docs-explain-kid` takes the s
 /docs-explain-kid P2-03             # the story, concepts to know first, steps with how to check each, pitfalls
 /docs-explain-kid Redis là gì, dự án mình dùng nó để làm gì?
 /docs-explain-kid simpler           # or "deeper", "give an example", "I already know SQL"
+/docs-explain-kid 2                 # answer suggested question 2, then suggest the next ones
 ```
 
 ### Result
@@ -164,7 +165,7 @@ skills/
   docs-master-plan/     SKILL.md, references/ (language, conventions, decision-register, doc-catalog, master-plan, templates), locales/, scripts/check_docs.py
   docs-project/         SKILL.md, references/ (language, conventions, doc-guide, templates), locales/, scripts/check_docs.py
   docs-explain/         SKILL.md, references/ (briefing, language, conventions), locales/, scripts/ (context.py, check_docs.py)
-  docs-explain-kid/     SKILL.md, references/ (plain-language, concepts, briefing, language, conventions), locales/, scripts/
+  docs-explain-kid/     SKILL.md, references/ (plain-language, diagrams, concepts, briefing, language, conventions), locales/, scripts/
 scripts/validate.py     frontmatter, links, locale consistency, shared-file sync, checker scripts on fixtures
 tests/fixtures/         sample SDDs and docs trees, valid and broken, in several languages
 ```

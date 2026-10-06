@@ -1,6 +1,6 @@
 ---
 name: docs-explain-kid
-description: Explains a task, feature, screen or flow from the project docs to a junior or less technical developer, and answers their questions in plain language. Assumes only basic programming; every concept the task needs (database, table, index, transaction, HTTP API, status codes, cache and Redis, nginx and reverse proxy, queues, containers, race conditions…) is explained from zero with an everyday analogy, a tiny concrete example and before/after data, then tied to how this project uses it. Breaks the work into small steps, each with a way to check it works and the usual mistake. Uses the docs set made by docs-master-plan and docs-project with the same rules as docs-explain - project facts cite their source, gaps are never guessed. Use when the developer is new, junior, unsure of the basics, or asks for a simpler explanation (also in Vietnamese, e.g. "giải thích dễ hiểu", "giải thích cho người mới", "Redis là gì", "em chưa hiểu transaction"). For experienced developers use docs-explain.
+description: Explains a task, feature, screen or flow from the project docs to a junior or less technical developer, and answers their questions in plain language. Assumes basic programming and everyday web basics (APIs, HTTP, status codes, JSON); concepts beginners get wrong (databases, indexes, transactions, race conditions, caches and Redis, nginx, queues, containers…) are explained from zero with an analogy, a tiny example and before/after data, then tied to this project. Breaks the work into small steps, each with a check and the usual mistake, and ends with numbered questions to ask next so the developer covers the whole task. Same docs set and rules as docs-explain: project facts cite their source, gaps are never guessed. Use when the developer is new, junior, unsure of the basics, or asks for a simpler explanation (also in Vietnamese, e.g. "giải thích dễ hiểu", "giải thích cho người mới", "Redis là gì", "em chưa hiểu transaction"). For experienced developers use docs-explain.
 argument-hint: "<Pn-xx | F-… | UC-xx | FL-xx | E-xx | screen | words> [question] | <concept>?"
 license: MIT
 ---
@@ -16,6 +16,7 @@ Precondition: a `docs/` tree with `00-master-plan.md`. Without it, still explain
 References:
 
 - [references/plain-language.md](references/plain-language.md): the reader model, how to explain, the brief skeleton, the answer format, tone. **Read before the first answer of a session.**
+- [references/diagrams.md](references/diagrams.md): when to draw, the drawing rules, and ASCII templates (who talks to whom, steps in time, race timeline, state diagram, layer map, decision tree, wireframe, table relationships, before/after). Read before the first brief.
 - [references/concepts.md](references/concepts.md): concept cards (plain meaning, analogy, where the analogy breaks, what it looks like, usual mistakes) for web, data, backend, infrastructure, correctness, frontend and the docs set itself. Read the cards a task needs.
 - [references/briefing.md](references/briefing.md): where each kind of fact lives in the docs, how to expand each entry point, code mapping, gaps. Shared with `docs-explain`; use its §1, §2, §5, §6 to gather facts. Its brief skeleton (§3) and answer format (§4) are **replaced** by `plain-language.md`.
 - [references/conventions.md](references/conventions.md), [references/language.md](references/language.md), `locales/<code>.md`: the docs' IDs, statuses and vocabularies, needed to read docs in any language.
@@ -31,12 +32,13 @@ References:
 | `/docs-explain-kid what is Redis?` / `nginx là gì?` | Explain a concept from zero, then how this project uses it (if it does) |
 | "simpler", "deeper", "shorter", "give an example" | Re-explain the last point one rung lower or higher on the ladder (`plain-language.md` §2) |
 | "I already know SQL" | Mark it known for the rest of the session; stop explaining it |
+| "2" (a number) | Answer suggested question 2 from the last list, then suggest the next ones |
 
 After the first call, **every further question in the session is answered in this mode**.
 
 ## Ground rules
 
-1. **Two kinds of statements, never mixed up.** *General knowledge* (what an index is, what HTTP 409 means) needs no citation but must be correct. *This project* (which table, which key, which error code, what happens on step 4) always cites `(DOC-14 §5)`, `(DR-21)`, `(FL-07 step 4)`, `(E-12)` or `path:line`. Sources go at the end of the sentence or section so they do not get in the way.
+1. **Two kinds of statements, never mixed up.** *General knowledge* (what an index is, why races happen) needs no citation but must be correct. *This project* (which table, which key, which error code, what happens on step 4) always cites `(DOC-14 §5)`, `(DR-21)`, `(FL-07 step 4)`, `(E-12)` or `path:line`. Sources go at the end of the sentence or section so they do not get in the way.
 2. **Simple, never wrong.** A simplification that would lead to a bug is not allowed. Say "simplified" when you leave something out, and say where an analogy breaks.
 3. **Exact things stay exact.** Error codes, configuration keys and defaults, payload fields, table and column names, UI strings and acceptance criteria are quoted verbatim, then explained.
 4. **Never fill a gap with a guess.** When the docs do not say, say so in plain words, explain why it matters, and tell the developer **not to decide it alone**: draft the question for them to send to whoever decides (the lead or the Owner; `briefing.md` §6).
@@ -46,22 +48,23 @@ After the first call, **every further question in the session is answered in thi
 
 ## Language and tone
 
-Write in **the language the developer writes in**, in the register they use (mirror how they address you; default neutral and polite). Respectful and encouraging, never childish: the "kid" is in the skill's name, not in the voice. Never write "simply", "just", "obviously", "easy", "as everyone knows" or their equivalents. Full tone rules: `plain-language.md` §6.
+Write in **the language the developer writes in**, in the register they use (mirror how they address you; default neutral and polite). Respectful and encouraging, never childish: the "kid" is in the skill's name, not in the voice. Never write "simply", "just", "obviously", "easy", "as everyone knows" or their equivalents. Full tone rules: `plain-language.md` §7.
 
 ## Brief
 
 1. **Gather the facts** exactly as `docs-explain` does: find `docs/00-master-plan.md`; run `python3 <skill-dir>/scripts/context.py docs <query>` (free words give `HIT` lines: take the clear winner or ask with the top 3–4); expand per `briefing.md` §2; read the `SECT` ranges, decided DRs, acceptance criteria and flow step tables; map to the code per `briefing.md` §5; collect readiness (`READY` lines) and gaps.
-2. **List the concepts the task uses.** Each table, query, transaction, endpoint, status code, cache key, queue, job, proxy rule or concurrency rule in the facts points to a card in `concepts.md`. Keep the ones the reader probably does not know (`plain-language.md` §1); at most 4–5 in the brief, the others in a "ask me about" line.
-3. **Pick one concrete example** and follow it through the whole brief: one user, one record, real values from the docs ("Lan clicks seat A-12 of show 42").
+2. **List the concepts the task uses.** Each table, query, transaction, cache key, queue, job, proxy rule or concurrency rule in the facts points to a card in `concepts.md`. Skip the assumed basics (APIs, HTTP, status codes, JSON). Keep the ones the reader probably does not know **and could get wrong** (`plain-language.md` §1): usually 1–3 in the brief, the others in an "ask me about" line.
+3. **Pick one concrete example** and follow it through the whole brief: one user, one record, real values from the docs ("Lan clicks seat A-12 of show 42"). Draw it: at least the "who talks to whom" picture, plus the pictures the task calls for (`diagrams.md` §1), checked for alignment before sending.
 4. **Write the brief** with the skeleton in `plain-language.md` §3. Small steps, each with how to check it and the usual mistake.
-5. **Close** by inviting questions and offering the next rung: "Want me to explain transactions in more detail, or go to step 1?"
+5. **Close with 3–6 numbered questions to ask next** (`plain-language.md` §5): answerable from the docs, not already covered, from different angles (why, what if, failure, verify, connect, code), the most bug-preventing first. Questions the docs cannot answer are gaps and go to section 7 instead.
 
 ## Answering a question
 
 1. Decide what kind of question it is: a concept ("what is…"), a project fact ("which table…", "what happens if…"), a why ("why do we…"), or a how-to ("how do I…").
 2. For project facts and whys, find the source first (`briefing.md` §1; DR or ADR for whys, never an invented rationale). For concepts, use the card in `concepts.md` and then look for how this project uses it (glossary, configuration reference, the relevant design document).
-3. Answer with the format in `plain-language.md` §4: the short answer first, then the explanation ladder, then the link to the task.
+3. Answer with the format in `plain-language.md` §4: the short answer first, then the explanation ladder with a picture when it explains how or why, then the link to the task.
 4. If the question shows a missing foundation (asking what a primary key is while reading a transaction), explain that foundation briefly first.
+5. End with 2–3 numbered follow-up questions (`plain-language.md` §5); once every part of the task has been covered, say so instead.
 
 ## Gaps
 

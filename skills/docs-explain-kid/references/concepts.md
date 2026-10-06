@@ -1,8 +1,8 @@
 # Concept cards
 
-Starting points for explaining a concept from zero (`plain-language.md` §2). Each card: **Plain** (rung 1), **Analogy** and where it **breaks** (rung 2), **Looks like** (rung 3), **Mistakes** beginners make, and **In the docs** (where to find rung 4, how this project uses it).
+Starting points for explaining a concept from zero (`plain-language.md` §2). Each card: **Plain** (rung 1), **Analogy** and where it **breaks** (rung 2), **Looks like** (rung 3), a **Picture** for the mechanisms that are hard to see (drawing rules in `diagrams.md`), **Mistakes** beginners make, and **In the docs** (where to find rung 4, how this project uses it).
 
-Use the cards as material, not text to paste: write new sentences in the developer's language, swap in the project's real names and values, and choose analogies that fit the developer's world. For a concept that has no card, follow the same five parts. General knowledge here needs no citation; anything about the project does.
+Use the cards as material, not text to paste. Pick by risk, not by vocabulary: a card is worth a place in the brief when misunderstanding it leads to a bug in this task. Write new sentences in the developer's language, swap in the project's real names and values, and choose analogies that fit the developer's world. For a concept that has no card, follow the same five parts. General knowledge here needs no citation; anything about the project does.
 
 ## Contents
 
@@ -17,6 +17,8 @@ Use the cards as material, not text to paste: write new sentences in the develop
 ---
 
 ## Web and API
+
+The first five cards (client and server, HTTP, status codes, JSON, API and endpoint) are assumed knowledge (`plain-language.md` §1): use them only when the developer asks or clearly lacks them.
 
 ### Client and server
 - **Plain:** The client (browser, mobile app) asks; the server answers. They are separate programs, usually on separate machines, talking over the network.
@@ -132,6 +134,13 @@ Use the cards as material, not text to paste: write new sentences in the develop
 - **Plain:** An extra structure the database keeps so it can find rows by some columns without reading the whole table.
 - **Analogy:** The index at the back of a book. **Breaks:** the database must update every index on every write, so each index makes inserts and updates a bit slower.
 - **Looks like:** `CREATE INDEX idx_seat_show ON seat (show_id);` makes `WHERE show_id = 42` fast.
+- **Picture:**
+  ```text
+  index on show_id         table seat (any order)
+  41 → rows 7, 19          row 2   A-12  show 42
+  42 → rows 2, 3, 15 ───▶  row 3   A-13  show 42
+  43 → rows 1, 8           row 15  B-04  show 42
+  ```
 - **Mistakes:** filtering by a column with no index on a big table; wrapping the column in a function (`WHERE lower(email) = …`) so the index is not used.
 - **In the docs:** data model (indexes with the query each one serves).
 
@@ -146,6 +155,14 @@ Use the cards as material, not text to paste: write new sentences in the develop
   COMMIT;
   ```
   In code, frameworks often open and commit it for you around a method (for example `@Transactional`).
+- **Picture:**
+  ```text
+  BEGIN
+   ├─ UPDATE seat A-12 → HELD
+   ├─ INSERT hold (A-12, until 10:10)
+  COMMIT ──▶ both changes become visible, together
+     error before COMMIT ──▶ ROLLBACK ──▶ as if nothing happened
+  ```
 - **Mistakes:** calling an external service (email, payment) inside a transaction; catching an error and continuing as if the transaction were still fine; assuming a transaction alone stops two users from both "reading free then writing held" (see race condition).
 - **In the docs:** the flow's "Transactions and concurrency" (`T1 begins` / `T1 commits` notes); the design document's concurrency section.
 
@@ -239,11 +256,24 @@ Use the cards as material, not text to paste: write new sentences in the develop
   location /api/ { proxy_pass http://api:8080/; }
   location /     { root /usr/share/nginx/html; try_files $uri /index.html; }
   ```
+- **Picture:**
+  ```text
+                      ┌───────┐  /api/…  ┌──────────────┐
+  Browser ── HTTPS ──▶│ nginx │─────────▶│ api :8080    │
+                      │       │─────────▶│ web files    │
+                      └───────┘  /…      └──────────────┘
+  ```
 - **Mistakes:** the API sees nginx's address instead of the user's (read `X-Forwarded-For` as configured); a request body bigger than nginx's limit fails before reaching the API (`413`); timeouts in nginx shorter than a slow endpoint.
 - **In the docs:** deployment; system context (containers); security (TLS, rate limits).
 
 ### Load balancer
 - **Plain:** Spreads requests across several copies of the same service, so more users can be served and one copy can fail without an outage. nginx can do this too.
+- **Picture:**
+  ```text
+               ┌──▶ api #1
+  nginx ───────┼──▶ api #2     the next request of the same user
+               └──▶ api #3     may land on another copy
+  ```
 - **Mistakes:** keeping user state in the memory of one copy (the next request may go to another copy); scheduled jobs running on every copy at once.
 - **In the docs:** deployment; quality attributes (scaling).
 
@@ -252,6 +282,16 @@ Use the cards as material, not text to paste: write new sentences in the develop
 - **Analogy:** Sticky notes on your desk next to the filing room: fast to read, limited space, and they can be thrown away.
 - **Breaks:** depending on configuration Redis may be wiped on restart or may evict keys when full; never treat it as the only copy of important data unless the docs say it is set up for that.
 - **Looks like:** `SET hold:A-12 "lan" EX 600` (expires in 600 s) · `GET hold:A-12` · `TTL hold:A-12`.
+- **Picture:**
+  ```text
+  GET seats of show 42
+     │
+     ▼
+  in Redis? ──yes──▶ return the copy            (fast, may be old)
+     │ no
+     ▼
+  read PostgreSQL ──▶ store a copy, TTL 30 s ──▶ return
+  ```
 - **Mistakes:** the cache shows old data after the database changes (no invalidation); a key with no expiry grows forever; `KEYS *` on a big Redis (blocks it; use `SCAN`); `FLUSHALL` (deletes everything).
 - **In the docs:** the design document that uses it (key names, TTL, what happens if Redis is down); configuration reference.
 
@@ -263,6 +303,11 @@ Use the cards as material, not text to paste: write new sentences in the develop
 ### Queue and message broker
 - **Plain:** A broker (RabbitMQ, Kafka…) holds messages between programs. A **producer** puts a message in; a **consumer** takes it out later and does the work. The producer does not wait for the work to finish.
 - **Analogy:** The ticket line at a bank: you take a number, and a free counter calls you when it can.
+- **Picture:**
+  ```text
+  OrderService ──put──▶ [ msg 3 | msg 2 | msg 1 ] ──take──▶ EmailWorker
+  (producer: does not wait)                     (consumer: acks when done)
+  ```
 - **Mistakes:** assuming each message is processed exactly once (see at-least-once); assuming messages arrive in order across partitions or queues; doing work and crashing before acknowledging, then being surprised it runs again.
 - **In the docs:** messaging contracts (topics, message schemas); data flows (commit and ack points).
 
@@ -283,12 +328,18 @@ Use the cards as material, not text to paste: write new sentences in the develop
 - **Plain:** Many requests run at the same time. A **race condition** is a bug that appears only when two of them interleave badly, typically "read, decide, write": both read the same old value, both decide, both write.
 - **Analogy:** Two people booking the last seat on two different phones at the same second.
 - **Looks like:** read `FREE` → (other user also reads `FREE`) → both write `HELD` → seat sold twice.
+- **Picture:** the two-lane timeline, bug first then fix (`diagrams.md` §3.3). Always draw it when explaining a race.
 - **Mistakes:** "it works on my machine" (you alone never trigger it); fixing it with a `sleep`.
 - **In the docs:** the flow's "Transactions and concurrency" (which step is the **arbiter**: the one place that decides who wins); the DR behind it; required tests with two concurrent requests.
 
 ### Lock
 - **Plain:** A way to make others wait while you work on something. **Pessimistic:** lock first, then work (`SELECT … FOR UPDATE`). **Optimistic:** work, then write only if nobody changed it meanwhile (a `version` column or a conditional `UPDATE … WHERE`).
 - **Analogy:** Locking the bathroom door vs. checking nobody moved your things before you sit back down.
+- **Picture:**
+  ```text
+  Lan:   lock A-12 ── work ── unlock
+  Minh:        wait ──────────────── lock A-12 ── work ── unlock
+  ```
 - **Mistakes:** holding a lock while calling a slow external service; two pieces of code locking things in different orders (deadlock).
 - **In the docs:** design document concurrency section; the DR that chose the approach.
 
@@ -296,6 +347,12 @@ Use the cards as material, not text to paste: write new sentences in the develop
 - **Plain:** Doing the same request twice has the same effect as doing it once. Needed because networks retry: the client may not know whether the first try worked.
 - **Analogy:** Pressing the elevator button five times still calls the elevator once.
 - **Looks like:** the client sends `Idempotency-Key: 7f3c…`; the server remembers the key and returns the first result for repeats. Or an upsert by business key instead of a plain insert.
+- **Picture:**
+  ```text
+  try 1: key 7f3c ──▶ new key: hold the seat, save result ──▶ 201
+  try 2: key 7f3c ──▶ key seen: return the saved result   ──▶ 201
+                                           (no second hold is created)
+  ```
 - **Mistakes:** charging or creating twice when the user double-clicks or the request is retried.
 - **In the docs:** API guidelines (idempotency); the endpoint's headers; the flow's step table.
 
@@ -306,6 +363,12 @@ Use the cards as material, not text to paste: write new sentences in the develop
 
 ### At-least-once delivery
 - **Plain:** Many brokers guarantee a message is delivered **at least** once, so sometimes twice. The consumer must handle duplicates (idempotency).
+- **Picture:**
+  ```text
+  broker ──msg 17──▶ consumer: send email ✓ … crash before ack ✗
+  broker ──msg 17──▶ consumer: send email again   ← duplicate
+  fix: record "msg 17 done"; when it comes again, skip it
+  ```
 - **Mistakes:** assuming "exactly once" and double-counting.
 - **In the docs:** data flows; the DR or ADR on delivery semantics.
 
@@ -344,6 +407,7 @@ Use the cards as material, not text to paste: write new sentences in the develop
 ### Sequence diagram
 - **Plain:** A picture of who talks to whom, in time order, top to bottom. Each vertical line is a participant (screen, API, service, database). Each arrow is one call; a dashed arrow is the answer. `alt` / `else` boxes are the different outcomes. `Note over … T1 begins / commits` marks a transaction.
 - **Looks like:** step numbers on the arrows match the rows of the step table below the diagram.
+- **Picture:** what a flow looks like once translated for the terminal (`diagrams.md` §3.2).
 - **In the docs:** detailed flows `FL-xx`; data flows.
 
 ### Endpoint spec
