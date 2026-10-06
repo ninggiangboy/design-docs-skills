@@ -120,7 +120,7 @@ NFR:
 ## 3. Wireframe            (ASCII, desktop and mobile when relevant)
 ## 4. Regions and components  (refer to the design system)
 ## 5. Data                 (endpoint E-xx · real-time channel · refetch interval)
-## 6. Interactions         (action → result → error)
+## 6. Interactions         (action → endpoint E-xx → result → error)
 ## 7. States               (loading · empty · error · stale · forbidden)
 ## 8. Microcopy
 ## 9. Acceptance criteria  (Given/When/Then, with IDs)

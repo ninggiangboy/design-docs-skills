@@ -68,6 +68,7 @@ The source of truth for **required content** is the document's row in master pla
 ## UX/UI
 
 - One file per screen per A.5, ASCII wireframes (desktop and mobile when relevant), data referenced by `E-xx` and real-time channel.
+- Every API call the screen makes is named by `E-xx`: reads in §5 Data, writes (submit, save, delete…) in §6 Interactions. An action whose endpoint does not exist yet stays an open question.
 - Acceptance criteria have the screen's own IDs, written Given/When/Then; E2E cases are named so they can become tests.
 - Microcopy is the exact string that will appear (in the UI language), collected in ui-states-and-copy.
 
