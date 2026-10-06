@@ -1,6 +1,6 @@
 ---
 name: docs-explain
-description: Explains a task, feature, use case, flow, endpoint or screen to the developer who is about to implement it, and answers their questions, from the docs set made by docs-master-plan and docs-project (master plan, decision register, DOC-xx, ADRs) and the code. Builds a task brief: what and why, what done means, what to read first, the flow step by step, contracts (endpoints, tables, configuration, errors), rules and edge cases, where it goes in the code, readiness and gaps. Every answer cites its source; anything the docs do not say is reported as a gap, never guessed, and can be recorded as a proposed DR. Use when a developer starts a task Pn-xx, a feature, a screen or a flow, asks what to do, how something works, why it was decided, where something is specified, or whether a task is ready (also in Vietnamese, e.g. "giải thích task P2-03", "bắt đầu code màn hình…", "tại sao chọn…", "API này trả gì"). Read-only unless the user agrees to record a gap.
+description: Explains a task, feature, use case, flow, endpoint or screen to the developer who is about to implement it, and answers their questions, from the docs set made by docs-master-plan and docs-project (master plan, decision register, DOC-xx, ADRs) and the code. Builds a task brief: what and why, what done means, what to read first, the flow step by step, contracts (endpoints, tables, configuration, errors), rules and edge cases, where it goes in the code, readiness and gaps. Every answer cites its source; anything the docs do not say is reported as a gap, never guessed, and can be recorded as a proposed DR. Use when a developer starts a task Pn-xx, a feature, a screen or a flow, asks what to do, how something works, why it was decided, where something is specified, or whether a task is ready (also in Vietnamese, e.g. "giải thích task P2-03", "bắt đầu code màn hình…", "tại sao chọn…", "API này trả gì"). Read-only unless the user agrees to record a gap. For junior developers use docs-explain-kid.
 argument-hint: "<Pn-xx | F-… | UC-xx | FL-xx | E-xx | screen | words> [question] | ready <Pn-xx | Pn>"
 license: MIT
 ---
@@ -8,6 +8,8 @@ license: MIT
 # Explain a task to the developer who implements it
 
 The master plan promises that **when a task starts, everything needed is already in the docs**. This skill is where that promise is kept or found broken: it reads the docs for the developer, explains the piece they are about to code, answers their questions with citations, and turns every unanswered question into a visible gap instead of a silent guess.
+
+The reader is assumed to know the stack (SQL, HTTP, the frameworks in use). For a developer who is still learning the basics, use `docs-explain-kid`: same facts and rules, explained from zero.
 
 Precondition: a `docs/` tree with `00-master-plan.md` (made by `docs-master-plan`, filled by `docs-project`). Without it, work from whatever design documents or SDD exist, say that the answers have no plan behind them, and suggest `/docs-master-plan`.
 

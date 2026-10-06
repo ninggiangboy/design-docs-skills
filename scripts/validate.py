@@ -8,10 +8,10 @@
 3. No personal absolute paths leak into skill files.
 4. Every locale has the keys, English column and {placeholders} of locales/en.md,
    and a Conventions section.
-5. Files shared between skills are identical (docs-master-plan is the source).
+5. Files shared between skills are identical to their source skill.
 6. The checker scripts give the expected result on tests/fixtures.
 
-Usage: python3 scripts/validate.py [--fix]   (--fix copies shared files from the source skill)
+Usage: python3 scripts/validate.py [--fix]   (--fix copies shared files from their source skill)
 """
 
 import re
@@ -23,13 +23,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SKILLS = ROOT / "skills"
 FIXTURES = ROOT / "tests" / "fixtures"
-SOURCE = "docs-master-plan"
+EXPLAIN = ["docs-explain", "docs-explain-kid"]
 SHARED = {
-    "references/conventions.md": ["docs-project", "docs-explain"],
-    "references/templates.md": ["docs-project"],
-    "references/language.md": ["docs-project", "docs-system-design", "docs-explain"],
-    "scripts/check_docs.py": ["docs-project", "docs-explain"],
-    "locales": ["docs-project", "docs-system-design", "docs-explain"],
+    # (source skill, path): skills holding a copy
+    ("docs-master-plan", "references/conventions.md"): ["docs-project", *EXPLAIN],
+    ("docs-master-plan", "references/templates.md"): ["docs-project"],
+    ("docs-master-plan", "references/language.md"): ["docs-project", "docs-system-design", *EXPLAIN],
+    ("docs-master-plan", "scripts/check_docs.py"): ["docs-project", *EXPLAIN],
+    ("docs-master-plan", "locales"): ["docs-project", "docs-system-design", *EXPLAIN],
+    ("docs-explain", "references/briefing.md"): ["docs-explain-kid"],
+    ("docs-explain", "scripts/context.py"): ["docs-explain-kid"],
 }
 CHECKS = [
     # (script, target, extra args, expected exit code, codes that must appear in the output)
@@ -118,7 +121,7 @@ def parse_locale(path: Path) -> dict[str, tuple[str, str]]:
 
 
 def check_locales() -> None:
-    folder = SKILLS / SOURCE / "locales"
+    folder = SKILLS / "docs-master-plan" / "locales"
     en = parse_locale(folder / "en.md")
     if len(en) < 100:
         fail(f"locales/en.md has only {len(en)} keys")
@@ -150,8 +153,8 @@ def same(a: Path, b: Path) -> bool:
 
 
 def check_shared(fix: bool) -> None:
-    for rel, copies in SHARED.items():
-        src = SKILLS / SOURCE / rel
+    for (source, rel), copies in SHARED.items():
+        src = SKILLS / source / rel
         for copy in copies:
             dst = SKILLS / copy / rel
             if same(src, dst):
@@ -163,9 +166,9 @@ def check_shared(fix: bool) -> None:
                 else:
                     dst.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copyfile(src, dst)
-                print(f"fix  copied {SOURCE}/{rel} -> {copy}/{rel}")
+                print(f"fix  copied {source}/{rel} -> {copy}/{rel}")
             else:
-                fail(f"{copy}/{rel} differs from {SOURCE}/{rel} (run with --fix)")
+                fail(f"{copy}/{rel} differs from {source}/{rel} (run with --fix)")
     print("ok   shared files")
 
 

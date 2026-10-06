@@ -1,13 +1,13 @@
 # design-docs-skills
 
-Four agent skills that take a project from an idea to a documentation set complete enough to implement without asking, and then explain it to the developers who implement it: **system design document → decision register and master plan → gated project docs → task briefs and answers**. The documents are written in the language you choose; templates and fixed labels ship for eight languages, and any other language works through a generated vocabulary.
+Five agent skills that take a project from an idea to a documentation set complete enough to implement without asking, and then explain it to the developers who implement it: **system design document → decision register and master plan → gated project docs → task briefs and answers**. The documents are written in the language you choose; templates and fixed labels ship for eight languages, and any other language works through a generated vocabulary.
 
 ```mermaid
 flowchart LR
     I["Idea, notes"] --> S["/docs-system-design<br/>write and revise the SDD"]
     S --> P["/docs-master-plan<br/>decision register + master plan"]
     P --> D["/docs-project<br/>write docs gate by gate"]
-    D --> E["/docs-explain<br/>brief a task, answer questions"]
+    D --> E["/docs-explain, /docs-explain-kid<br/>brief a task, answer questions"]
     E --> C["Implement from plan and docs"]
     E -. "gaps become proposed DRs" .-> P
     S -. "many revision rounds" .-> S
@@ -20,13 +20,14 @@ flowchart LR
 | `docs-master-plan` | The SDD | `docs/00-decision-register.md` (every place the SDD does not say "exactly how" becomes a DR with a proposed option), `docs/00-master-plan.md` (documents to write with required content and gates, tasks per phase with acceptance criteria, traceability matrix), `docs/README.md` |
 | `docs-project` | The master plan and decision register | The `DOC-xx` documents, ADRs, runbooks, experiments, screen specs…, each matching its required content and gate in the plan |
 | `docs-explain` | A task, feature, use case, flow, endpoint or screen, and the developer's questions | A brief in chat (what and why, done means, read first, how it works, contracts, rules, code to create, readiness, gaps) and cited answers; unanswered questions become proposed DRs when you agree |
+| `docs-explain-kid` | The same, for a junior or less technical developer | The same facts and rules, explained from zero: everyday analogies, tiny examples, data before and after, concept cards (database, transaction, index, HTTP, Redis, nginx, queues, race conditions…), small steps each with how to check it and the usual mistake |
 
 ## Install
 
 Requires [Node.js](https://nodejs.org) for `npx`, and Python 3.10+ for the checker scripts bundled with the skills.
 
 ```bash
-# All four skills for Claude Code, available in every project
+# All five skills for Claude Code, available in every project
 npx skills add ninggiangboy/design-docs-skills -g -a claude-code
 
 # Only for the current project (.claude/skills/), committed with the repo
@@ -40,7 +41,7 @@ npx skills add ninggiangboy/design-docs-skills --list
 
 # Update, remove
 npx skills update
-npx skills remove docs-system-design docs-master-plan docs-project docs-explain
+npx skills remove docs-system-design docs-master-plan docs-project docs-explain docs-explain-kid
 ```
 
 `npx skills` also installs for other agents (Codex, Cursor, OpenCode, Gemini CLI…): drop `-a claude-code` to choose from a list.
@@ -105,6 +106,14 @@ Accept every proposal except DR-07: use RabbitMQ instead of Kafka.
 
 Answers come in the language you ask in, cite `DOC-xx §n`, `DR-xx`, `FL-xx` or `path:line`, and mark what comes from Draft documents or Proposed DRs. When the docs do not say, the skill says so instead of guessing, offers options, and with your agreement records the question as a proposed DR and an open question of the affected document.
 
+For a developer who is still learning the basics, `docs-explain-kid` takes the same commands and explains from zero; it also answers pure concept questions and adapts as you go:
+
+```text
+/docs-explain-kid P2-03             # the story, concepts to know first, steps with how to check each, pitfalls
+/docs-explain-kid Redis là gì, dự án mình dùng nó để làm gì?
+/docs-explain-kid simpler           # or "deeper", "give an example", "I already know SQL"
+```
+
 ### Result
 
 ```text
@@ -155,11 +164,12 @@ skills/
   docs-master-plan/     SKILL.md, references/ (language, conventions, decision-register, doc-catalog, master-plan, templates), locales/, scripts/check_docs.py
   docs-project/         SKILL.md, references/ (language, conventions, doc-guide, templates), locales/, scripts/check_docs.py
   docs-explain/         SKILL.md, references/ (briefing, language, conventions), locales/, scripts/ (context.py, check_docs.py)
+  docs-explain-kid/     SKILL.md, references/ (plain-language, concepts, briefing, language, conventions), locales/, scripts/
 scripts/validate.py     frontmatter, links, locale consistency, shared-file sync, checker scripts on fixtures
 tests/fixtures/         sample SDDs and docs trees, valid and broken, in several languages
 ```
 
-Each skill is self-contained so it can be installed alone; shared files (`locales/`, `language.md`, `conventions.md`, `templates.md`, `check_docs.py`) therefore exist in more than one skill. The source copy lives in `docs-master-plan`; edit it there, then:
+Each skill is self-contained so it can be installed alone; shared files (`locales/`, `language.md`, `conventions.md`, `templates.md`, `check_docs.py`) therefore exist in more than one skill. The source copy lives in `docs-master-plan` (`briefing.md` and `context.py` in `docs-explain`); edit it there, then:
 
 ```bash
 python3 scripts/validate.py --fix   # copy shared files to the other skills
