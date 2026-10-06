@@ -23,6 +23,7 @@ Each prefix has one meaning in the whole project. Before introducing a new prefi
 | `Mn` | Milestone that closes phase n | master plan §4 |
 | `S-xx` | Spike (an experiment of at most 1–2 days) | master plan, Phase 0 |
 | `E-xx` | API endpoint | API endpoint catalog |
+| `FL-xx` / `FL-xx.y` | Detailed flow / sub-flow | `06-design/flows/` |
 | `DQ-xx` | Data quality rule | data quality rules |
 | `EXP-xx` | Experiment | `experiments/` |
 | `RB-xx` | Runbook | `runbooks/` |

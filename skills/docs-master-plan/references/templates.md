@@ -2,7 +2,7 @@
 
 Canonical templates, written in English. **Render them in the output language**: look up every heading, label and table column in the English column of the vocabulary (`locales/<code>.md`, or Appendix B of the master plan for a generated language) and use the value in the output language. Keep IDs, status values (`Draft`, `Accepted`…), code, SQL, JSON and file names unchanged. Placeholders in `<…>` are filled with real content in the output language.
 
-A.1–A.7 are copied into Appendix A of the master plan. B.x are skeletons for the remaining documents.
+A.1–A.8 are copied into Appendix A of the master plan. B.x are skeletons for the remaining documents.
 
 ## A.1 ADR (short MADR)
 
@@ -51,7 +51,7 @@ Option **N** is chosen.
   - E1. … → <behavior, UI string "…">
 - **Postconditions:** …
 - **Business rules:** …
-- **Related:** FR-…; screen `screens/<x>.md`; endpoint E-…; event …
+- **Related:** FR-…; screen `screens/<x>.md`; endpoint E-…; event …; detailed flow FL-…
 ```
 
 ## A.3 Requirement with acceptance criteria
@@ -167,6 +167,80 @@ NFR:
 ## Confirm it is resolved
 ## Prevention and follow-up
 ```
+
+## A.8 Detailed flow
+
+One file per functional area (`06-design/flows/<area>.md`) with the ordinary header block, then one section per flow:
+
+````markdown
+## FL-xx · <Flow name: actor + action, e.g. "Customer holds a seat">
+
+- **UC / FR:** UC-…, FR-… · **Screen:** `screens/<x>.md` · **Endpoints:** E-…, E-… · **Events:** …
+- **Trigger:** <the user's action on the screen, or the job schedule>
+- **Preconditions:** …
+
+### Participants
+
+| Participant | Kind | Code | Defined in |
+| --- | --- | --- | --- |
+| `SeatMap` | Screen | `web/src/pages/SeatMap.tsx` | DOC-xx |
+| `api` | API | `HoldController.create` | DOC-xx E-07 |
+| `HoldService` | Service | `HoldService.hold(cmd)` | DOC-xx §3 |
+| `db` | Data store | `seat`, `hold` | DOC-xx §5.2 |
+
+### Sequence diagram
+
+```mermaid
+sequenceDiagram
+  autonumber
+  actor U as Customer
+  participant UI as SeatMap
+  participant API as api
+  participant S as HoldService
+  participant DB as db
+  U->>UI: Click a free seat
+  UI->>API: POST /holds (E-07)
+  API->>S: hold(cmd)
+  Note over S,DB: T1 begins
+  S->>DB: UPDATE seat SET status='HELD' … WHERE status='FREE'
+  alt 1 row updated
+    S->>DB: INSERT hold
+    Note over S,DB: T1 commits
+    S-->>API: Hold
+    API-->>UI: 201 + hold
+    UI-->>U: Seat shown as held, countdown 10:00
+  else 0 rows updated (E1)
+    Note over S,DB: T1 rolls back
+    S-->>API: SeatTakenException
+    API-->>UI: 409 seat-taken
+    UI-->>U: Toast "This seat was just taken"
+  end
+```
+
+### Step details
+
+| Step | From → To | Call | Data | Rules and checks | Error → handling |
+| --- | --- | --- | --- | --- | --- |
+| 2 | UI → API | `POST /holds` (E-07) | `{ "seatId": "A-12", "showId": 42 }` | Idempotency-Key header | Timeout → retry once with the same key |
+| 4 | Service → DB | Conditional `UPDATE` (DOC-xx §5.2) | `seat_id`, `show_id` | `status='FREE'` is the arbiter (DR-xx) | 0 rows → E1 |
+
+### Transactions and concurrency
+
+<What commits together (T1…); which step is the arbiter in a race; idempotency key; what the user sees if the process dies after each commit.>
+
+### Errors and handling
+
+| Situation | Step | HTTP status / problem type | UI behavior and message |
+| --- | --- | --- | --- |
+| E1 Seat taken by another user | 4 | 409 `seat-taken` | Seat turns grey; toast "This seat was just taken" |
+
+### Required tests
+
+| ID | Scenario | Expected |
+| --- | --- | --- |
+````
+
+Diagram rules: `autonumber` so the step table refers to arrow numbers; participants are named as in `flows/README.md`; every arrow shows the real call (endpoint with `E-xx`, method, SQL statement, topic); every error flow of the UC is an `alt`/`else` branch; `Note over` marks transaction begin/commit/rollback. A flow longer than about 25 arrows is split into sub-flows (`FL-07.1`, `FL-07.2`) that link to each other. Message text in a `sequenceDiagram` is not quoted (quotes render literally); avoid `;` and `#` in it.
 
 ---
 

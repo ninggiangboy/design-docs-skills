@@ -150,6 +150,22 @@ Same keys, English column and `{placeholders}` as `en.md`. Render template headi
 | col.affected | Affected items | Éléments concernés |
 | col.level | Level | Niveau |
 | col.reason | Reason | Raison |
+| col.participant | Participant | Participant |
+| col.kind | Kind | Nature |
+| col.code | Code | Code |
+| col.defined_in | Defined in | Défini dans |
+| col.step | Step | Étape |
+| col.from_to | From → To | De → Vers |
+| col.call | Call | Appel |
+| col.data | Data | Données |
+| col.rules_checks | Rules and checks | Règles et contrôles |
+| col.error_handling | Error → handling | Erreur → traitement |
+| col.http_problem | HTTP status / problem type | Statut HTTP / type de problème |
+| col.ui_behavior | UI behavior and message | Comportement de l'UI et message |
+| col.flow | Flow | Flux |
+| col.screens | Screens | Écrans |
+| col.endpoints | Endpoints | Endpoints |
+| col.file | File | Fichier |
 | adr.title | ADR-{n}: {title} | ADR-{n} : {title} |
 | adr.context | Context | Contexte |
 | adr.options | Options considered | Options envisagées |
@@ -218,6 +234,13 @@ Same keys, English column and `{placeholders}` as `en.md`. Render template headi
 | des.errors | Errors and handling | Erreurs et traitement |
 | des.tests | Required tests | Tests obligatoires |
 | des.not_here | Not in this document | Hors de ce document |
+| flow.index | Detailed flows | Flux détaillés |
+| flow.title | Detailed flows: {area} | Flux détaillés : {area} |
+| flow.screen | Screen | Écran |
+| flow.events | Events | Événements |
+| flow.participants | Participants | Participants |
+| flow.sequence | Sequence diagram | Diagramme de séquence |
+| flow.steps | Step details | Détail des étapes |
 | persona.overview | Overview | Vue d'ensemble |
 | persona.goals | Goals | Objectifs |
 | persona.pains | Pain points | Irritants |

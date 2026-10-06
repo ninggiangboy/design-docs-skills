@@ -150,6 +150,22 @@ Same keys, English column and `{placeholders}` as `en.md`. Render template headi
 | col.affected | Affected items | Mục bị ảnh hưởng |
 | col.level | Level | Mức |
 | col.reason | Reason | Lý do |
+| col.participant | Participant | Thành phần tham gia |
+| col.kind | Kind | Loại |
+| col.code | Code | Code |
+| col.defined_in | Defined in | Định nghĩa tại |
+| col.step | Step | Bước |
+| col.from_to | From → To | Từ → Đến |
+| col.call | Call | Lời gọi |
+| col.data | Data | Dữ liệu |
+| col.rules_checks | Rules and checks | Quy tắc và kiểm tra |
+| col.error_handling | Error → handling | Lỗi → xử lý |
+| col.http_problem | HTTP status / problem type | HTTP status / problem type |
+| col.ui_behavior | UI behavior and message | Hành vi UI và thông báo |
+| col.flow | Flow | Luồng |
+| col.screens | Screens | Màn hình |
+| col.endpoints | Endpoints | Endpoint |
+| col.file | File | File |
 | adr.title | ADR-{n}: {title} | ADR-{n}: {title} |
 | adr.context | Context | Bối cảnh |
 | adr.options | Options considered | Các phương án |
@@ -218,6 +234,13 @@ Same keys, English column and `{placeholders}` as `en.md`. Render template headi
 | des.errors | Errors and handling | Lỗi và cách xử lý |
 | des.tests | Required tests | Test bắt buộc |
 | des.not_here | Not in this document | Không thuộc tài liệu này |
+| flow.index | Detailed flows | Luồng chi tiết |
+| flow.title | Detailed flows: {area} | Luồng chi tiết: {area} |
+| flow.screen | Screen | Màn hình |
+| flow.events | Events | Sự kiện |
+| flow.participants | Participants | Thành phần tham gia |
+| flow.sequence | Sequence diagram | Sơ đồ tuần tự |
+| flow.steps | Step details | Chi tiết từng bước |
 | persona.overview | Overview | Tổng quan |
 | persona.goals | Goals | Mục tiêu |
 | persona.pains | Pain points | Nỗi đau |

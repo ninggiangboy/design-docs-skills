@@ -9,7 +9,7 @@ Used to build master plan §3.1 (the tree) and §3.2 (required content and gates
 5. Number `DOC-01…` in tree order. Documents added later take the next number.
 6. Document titles are written in the output language; file and folder names stay English kebab-case.
 
-Default gates: foundation documents (product, glossary, architecture, core data model, local dev) gate **P1**; design documents gate **the phase that implements them**; UI documents gate the UI phase; runbooks and experiments gate the phase that measures or operates. Documents that keep growing (configuration reference, CI/CD) are marked "skeleton at P1".
+Default gates: foundation documents (product, glossary, architecture, core data model, local dev) gate **P1**; design documents gate **the phase that implements them**; a detailed-flows file gates the first phase that implements its backend (the screen steps are completed before the UI phase); UI documents gate the UI phase; runbooks and experiments gate the phase that measures or operates. Documents that keep growing (configuration reference, CI/CD) are marked "skeleton at P1".
 
 ## 00 · Coordination (always; created by docs-master-plan)
 
@@ -64,6 +64,15 @@ Tables by topic: term (the name used in code and UI) · local name · definition
 **Common skeleton** of this group (state it in the plan): Purpose → Scope → Components and interfaces (code signatures) → Algorithm (pseudo-code) → Transactions and concurrency → Configuration → Metrics and logs → Errors and handling → Required tests (table with IDs) → Open questions (empty when Approved).
 
 Per SDD component (examples seen): batch/chunk processing, streaming consumer, static data loading, dead letters and replay, analytics (every algorithm has an **input → expected output test table**), AI/LLM (abstract port, adapters, thresholds, kill switches, safety), simulator or synthetic source, real-time delivery (SSE/WebSocket), demo tooling.
+
+Detailed flows (when use cases cross ≥ 2 layers: screen, frontend, API, service, data store, cache, broker, external service, job):
+
+| File | Required content |
+| --- | --- |
+| `flows/README.md` | Index: table `FL · Flow · UC · Screens · Endpoints · File`. The participant naming used in every diagram (one name per screen, app, class, table, topic) |
+| `flows/<area>.md` | **One file per functional area** (a feature group or a bounded context), one section `FL-xx` per flow per template A.8. Every UC in master plan §3.4 has at least one `FL-xx`; a UC with very different paths (create vs. approve) gets several. Each flow: participants (down to the class/component and table), a `sequenceDiagram` from the user's action on the screen to the data store and back, **`alt` branches for every error flow of the UC**, transaction boundaries and the step table (call, data, rule, error). The plan names each file and its flows |
+
+Boundary with `data-flows.md`: data flows follow the data between containers (pipelines, commit and ack points); detailed flows follow one use case through every layer down to the method, endpoint, SQL and UI state.
 
 Cross-cutting (always when there is a backend):
 

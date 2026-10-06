@@ -149,6 +149,22 @@ This is the canonical vocabulary. Every other locale file has the same keys, the
 | col.affected | Affected items |
 | col.level | Level |
 | col.reason | Reason |
+| col.participant | Participant |
+| col.kind | Kind |
+| col.code | Code |
+| col.defined_in | Defined in |
+| col.step | Step |
+| col.from_to | From → To |
+| col.call | Call |
+| col.data | Data |
+| col.rules_checks | Rules and checks |
+| col.error_handling | Error → handling |
+| col.http_problem | HTTP status / problem type |
+| col.ui_behavior | UI behavior and message |
+| col.flow | Flow |
+| col.screens | Screens |
+| col.endpoints | Endpoints |
+| col.file | File |
 | adr.title | ADR-{n}: {title} |
 | adr.context | Context |
 | adr.options | Options considered |
@@ -217,6 +233,13 @@ This is the canonical vocabulary. Every other locale file has the same keys, the
 | des.errors | Errors and handling |
 | des.tests | Required tests |
 | des.not_here | Not in this document |
+| flow.index | Detailed flows |
+| flow.title | Detailed flows: {area} |
+| flow.screen | Screen |
+| flow.events | Events |
+| flow.participants | Participants |
+| flow.sequence | Sequence diagram |
+| flow.steps | Step details |
 | persona.overview | Overview |
 | persona.goals | Goals |
 | persona.pains | Pain points |

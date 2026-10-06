@@ -150,6 +150,22 @@ Same keys, English column and `{placeholders}` as `en.md`. Render template headi
 | col.affected | Affected items | 影響を受ける項目 |
 | col.level | Level | レベル |
 | col.reason | Reason | 理由 |
+| col.participant | Participant | 参加者 |
+| col.kind | Kind | 種別 |
+| col.code | Code | コード |
+| col.defined_in | Defined in | 定義元 |
+| col.step | Step | ステップ |
+| col.from_to | From → To | 送信元 → 送信先 |
+| col.call | Call | 呼び出し |
+| col.data | Data | データ |
+| col.rules_checks | Rules and checks | ルールとチェック |
+| col.error_handling | Error → handling | エラー → 処理 |
+| col.http_problem | HTTP status / problem type | HTTP ステータス / problem type |
+| col.ui_behavior | UI behavior and message | UI の動作とメッセージ |
+| col.flow | Flow | フロー |
+| col.screens | Screens | 画面 |
+| col.endpoints | Endpoints | エンドポイント |
+| col.file | File | ファイル |
 | adr.title | ADR-{n}: {title} | ADR-{n}：{title} |
 | adr.context | Context | 背景 |
 | adr.options | Options considered | 検討した選択肢 |
@@ -218,6 +234,13 @@ Same keys, English column and `{placeholders}` as `en.md`. Render template headi
 | des.errors | Errors and handling | エラーと処理 |
 | des.tests | Required tests | 必須テスト |
 | des.not_here | Not in this document | 本書の対象外 |
+| flow.index | Detailed flows | 詳細フロー |
+| flow.title | Detailed flows: {area} | 詳細フロー: {area} |
+| flow.screen | Screen | 画面 |
+| flow.events | Events | イベント |
+| flow.participants | Participants | 参加者 |
+| flow.sequence | Sequence diagram | シーケンス図 |
+| flow.steps | Step details | ステップ詳細 |
 | persona.overview | Overview | 概要 |
 | persona.goals | Goals | 目標 |
 | persona.pains | Pain points | 課題 |

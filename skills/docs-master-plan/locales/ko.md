@@ -150,6 +150,22 @@ Same keys, English column and `{placeholders}` as `en.md`. Render template headi
 | col.affected | Affected items | 영향받는 항목 |
 | col.level | Level | 수준 |
 | col.reason | Reason | 이유 |
+| col.participant | Participant | 참여자 |
+| col.kind | Kind | 종류 |
+| col.code | Code | 코드 |
+| col.defined_in | Defined in | 정의 위치 |
+| col.step | Step | 단계 |
+| col.from_to | From → To | 보내는 쪽 → 받는 쪽 |
+| col.call | Call | 호출 |
+| col.data | Data | 데이터 |
+| col.rules_checks | Rules and checks | 규칙과 검증 |
+| col.error_handling | Error → handling | 오류 → 처리 |
+| col.http_problem | HTTP status / problem type | HTTP 상태 / problem type |
+| col.ui_behavior | UI behavior and message | UI 동작과 메시지 |
+| col.flow | Flow | 흐름 |
+| col.screens | Screens | 화면 |
+| col.endpoints | Endpoints | 엔드포인트 |
+| col.file | File | 파일 |
 | adr.title | ADR-{n}: {title} | ADR-{n}: {title} |
 | adr.context | Context | 배경 |
 | adr.options | Options considered | 검토한 대안 |
@@ -218,6 +234,13 @@ Same keys, English column and `{placeholders}` as `en.md`. Render template headi
 | des.errors | Errors and handling | 오류와 처리 |
 | des.tests | Required tests | 필수 테스트 |
 | des.not_here | Not in this document | 이 문서의 범위 밖 |
+| flow.index | Detailed flows | 상세 흐름 |
+| flow.title | Detailed flows: {area} | 상세 흐름: {area} |
+| flow.screen | Screen | 화면 |
+| flow.events | Events | 이벤트 |
+| flow.participants | Participants | 참여자 |
+| flow.sequence | Sequence diagram | 시퀀스 다이어그램 |
+| flow.steps | Step details | 단계 상세 |
 | persona.overview | Overview | 개요 |
 | persona.goals | Goals | 목표 |
 | persona.pains | Pain points | 불편 사항 |

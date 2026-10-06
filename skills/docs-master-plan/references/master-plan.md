@@ -53,7 +53,7 @@ One code block with the tree; every file has a `# DOC-xx` comment (the checker r
 ### 3.2 Required content of each document
 "The Gate column is the phase that needs the document Approved before it starts." One table per group: `DOC · Document · Required content · Gate`. The design group states the **common skeleton**. ADRs get their own table: `ADR · Subject · Source · Gate`.
 
-Required content must be **specific to the project**: names of the tables that need DDL, names of the flows that need sequence diagrams, job names, screen names, the minimum glossary term list, the DRs that apply, coverage targets. Bold the items most likely to be forgotten.
+Required content must be **specific to the project**: names of the tables that need DDL, names of the flows that need sequence diagrams, the `FL-xx` list of each detailed-flows file (with its UC), job names, screen names, the minimum glossary term list, the DRs that apply, coverage targets. Bold the items most likely to be forgotten.
 
 ### 3.3 Definition of "Approved"
 The five-point checklist (`conventions.md` §3).
@@ -132,7 +132,7 @@ A numbered list: decide the P1/P2-blocking DRs → run spikes in parallel → wr
 
 ## Appendix A: Shared templates
 
-Copy templates A.1–A.7 from `templates.md`, rendered in the output language. Drop templates of groups that do not apply; replace examples with examples from this project.
+Copy templates A.1–A.8 from `templates.md`, rendered in the output language. Drop templates of groups that do not apply; replace examples with examples from this project.
 
 ## Appendix B: Vocabulary (only for a generated vocabulary)
 

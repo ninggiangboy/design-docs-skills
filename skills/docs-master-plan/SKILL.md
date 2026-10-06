@@ -24,7 +24,7 @@ References (read before writing the matching part):
 - [references/decision-register.md](references/decision-register.md): register skeleton and the **gap-hunting checklist**.
 - [references/doc-catalog.md](references/doc-catalog.md): standard documents, when to include each, required content, default gates.
 - [references/master-plan.md](references/master-plan.md): master plan skeleton, section by section.
-- [references/templates.md](references/templates.md): templates A.1–A.7 for Appendix A and B.6 for the README.
+- [references/templates.md](references/templates.md): templates A.1–A.8 for Appendix A and B.6 for the README.
 - `locales/<code>.md`: vocabulary per language (`en`, `vi`, `ja`, `zh`, `ko`, `fr`, `es`, `de`).
 - `scripts/check_docs.py [docs_dir] [--vocab FILE]`: checks IDs, links, status lines.
 

@@ -103,7 +103,8 @@ docs/
   03-architecture/   context and containers, data flows, contracts, quality attributes, stack
   04-adr/
   05-data/           sources, data model, data quality rules, DB roles, lifecycle
-  06-design/         one document per component, plus security, observability, configuration, errors
+  06-design/         one document per component, detailed flows (sequence UI → API → service → DB per use case),
+                     plus security, observability, configuration, errors
   07-api/
   08-ux-ui/          IA, design system, one file per screen, microcopy
   09-operations/     local dev, deployment, CI/CD, runbooks, backup

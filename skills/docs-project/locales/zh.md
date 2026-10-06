@@ -150,6 +150,22 @@ Same keys, English column and `{placeholders}` as `en.md`. Render template headi
 | col.affected | Affected items | 受影响项 |
 | col.level | Level | 级别 |
 | col.reason | Reason | 原因 |
+| col.participant | Participant | 参与者 |
+| col.kind | Kind | 类别 |
+| col.code | Code | 代码 |
+| col.defined_in | Defined in | 定义于 |
+| col.step | Step | 步骤 |
+| col.from_to | From → To | 调用方 → 被调用方 |
+| col.call | Call | 调用 |
+| col.data | Data | 数据 |
+| col.rules_checks | Rules and checks | 规则与校验 |
+| col.error_handling | Error → handling | 错误 → 处理 |
+| col.http_problem | HTTP status / problem type | HTTP 状态 / problem type |
+| col.ui_behavior | UI behavior and message | UI 行为与提示 |
+| col.flow | Flow | 流程 |
+| col.screens | Screens | 页面 |
+| col.endpoints | Endpoints | 接口 |
+| col.file | File | 文件 |
 | adr.title | ADR-{n}: {title} | ADR-{n}：{title} |
 | adr.context | Context | 背景 |
 | adr.options | Options considered | 考虑过的方案 |
@@ -218,6 +234,13 @@ Same keys, English column and `{placeholders}` as `en.md`. Render template headi
 | des.errors | Errors and handling | 错误与处理 |
 | des.tests | Required tests | 必备测试 |
 | des.not_here | Not in this document | 不在本文档范围内 |
+| flow.index | Detailed flows | 详细流程 |
+| flow.title | Detailed flows: {area} | 详细流程：{area} |
+| flow.screen | Screen | 页面 |
+| flow.events | Events | 事件 |
+| flow.participants | Participants | 参与者 |
+| flow.sequence | Sequence diagram | 时序图 |
+| flow.steps | Step details | 步骤详情 |
 | persona.overview | Overview | 概览 |
 | persona.goals | Goals | 目标 |
 | persona.pains | Pain points | 痛点 |
