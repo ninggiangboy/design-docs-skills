@@ -1,13 +1,15 @@
 # design-docs-skills
 
-Three agent skills that take a project from an idea to a documentation set complete enough to implement without asking: **system design document → decision register and master plan → gated project docs**. The documents are written in the language you choose; templates and fixed labels ship for eight languages, and any other language works through a generated vocabulary.
+Four agent skills that take a project from an idea to a documentation set complete enough to implement without asking, and then explain it to the developers who implement it: **system design document → decision register and master plan → gated project docs → task briefs and answers**. The documents are written in the language you choose; templates and fixed labels ship for eight languages, and any other language works through a generated vocabulary.
 
 ```mermaid
 flowchart LR
     I["Idea, notes"] --> S["/docs-system-design<br/>write and revise the SDD"]
     S --> P["/docs-master-plan<br/>decision register + master plan"]
     P --> D["/docs-project<br/>write docs gate by gate"]
-    D --> C["Implement from plan and docs"]
+    D --> E["/docs-explain<br/>brief a task, answer questions"]
+    E --> C["Implement from plan and docs"]
+    E -. "gaps become proposed DRs" .-> P
     S -. "many revision rounds" .-> S
     P -. "Owner decides DRs" .-> P
 ```
@@ -17,13 +19,14 @@ flowchart LR
 | `docs-system-design` | An idea, notes, or an existing SDD | `<project>-sdd.md`: context, core problem, scope, requirements, architecture, deep domain sections (invariants, state machines, races, options analysis), data, API, UI, fault tolerance, experiments, plan, risks. Revised over many turns in the same session |
 | `docs-master-plan` | The SDD | `docs/00-decision-register.md` (every place the SDD does not say "exactly how" becomes a DR with a proposed option), `docs/00-master-plan.md` (documents to write with required content and gates, tasks per phase with acceptance criteria, traceability matrix), `docs/README.md` |
 | `docs-project` | The master plan and decision register | The `DOC-xx` documents, ADRs, runbooks, experiments, screen specs…, each matching its required content and gate in the plan |
+| `docs-explain` | A task, feature, use case, flow, endpoint or screen, and the developer's questions | A brief in chat (what and why, done means, read first, how it works, contracts, rules, code to create, readiness, gaps) and cited answers; unanswered questions become proposed DRs when you agree |
 
 ## Install
 
 Requires [Node.js](https://nodejs.org) for `npx`, and Python 3.10+ for the checker scripts bundled with the skills.
 
 ```bash
-# All three skills for Claude Code, available in every project
+# All four skills for Claude Code, available in every project
 npx skills add ninggiangboy/design-docs-skills -g -a claude-code
 
 # Only for the current project (.claude/skills/), committed with the repo
@@ -37,7 +40,7 @@ npx skills add ninggiangboy/design-docs-skills --list
 
 # Update, remove
 npx skills update
-npx skills remove docs-system-design docs-master-plan docs-project
+npx skills remove docs-system-design docs-master-plan docs-project docs-explain
 ```
 
 `npx skills` also installs for other agents (Codex, Cursor, OpenCode, Gemini CLI…): drop `-a claude-code` to choose from a list.
@@ -90,6 +93,18 @@ Accept every proposal except DR-07: use RabbitMQ instead of Kafka.
 /docs-project status        # DOC × gate × status table
 ```
 
+### 4. Start a task with a brief, ask while coding
+
+```text
+/docs-explain P2-03                 # brief: what, why, done means, flow, contracts, code, readiness, gaps
+/docs-explain seat map screen       # a screen by name; also F-…, UC-…, FL-…, E-…
+/docs-explain P2-03 what happens if the hold expires during payment?
+/docs-explain why SKIP LOCKED instead of an advisory lock?
+/docs-explain ready P2              # Task · State · Ready · Blockers for a whole phase
+```
+
+Answers come in the language you ask in, cite `DOC-xx §n`, `DR-xx`, `FL-xx` or `path:line`, and mark what comes from Draft documents or Proposed DRs. When the docs do not say, the skill says so instead of guessing, offers options, and with your agreement records the question as a proposed DR and an open question of the affected document.
+
 ### Result
 
 ```text
@@ -139,6 +154,7 @@ skills/
   docs-system-design/   SKILL.md, references/ (language, structure, style, revision), locales/, scripts/check_sdd.py
   docs-master-plan/     SKILL.md, references/ (language, conventions, decision-register, doc-catalog, master-plan, templates), locales/, scripts/check_docs.py
   docs-project/         SKILL.md, references/ (language, conventions, doc-guide, templates), locales/, scripts/check_docs.py
+  docs-explain/         SKILL.md, references/ (briefing, language, conventions), locales/, scripts/ (context.py, check_docs.py)
 scripts/validate.py     frontmatter, links, locale consistency, shared-file sync, checker scripts on fixtures
 tests/fixtures/         sample SDDs and docs trees, valid and broken, in several languages
 ```

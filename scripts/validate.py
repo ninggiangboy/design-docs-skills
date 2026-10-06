@@ -25,11 +25,11 @@ SKILLS = ROOT / "skills"
 FIXTURES = ROOT / "tests" / "fixtures"
 SOURCE = "docs-master-plan"
 SHARED = {
-    "references/conventions.md": ["docs-project"],
+    "references/conventions.md": ["docs-project", "docs-explain"],
     "references/templates.md": ["docs-project"],
-    "references/language.md": ["docs-project", "docs-system-design"],
-    "scripts/check_docs.py": ["docs-project"],
-    "locales": ["docs-project", "docs-system-design"],
+    "references/language.md": ["docs-project", "docs-system-design", "docs-explain"],
+    "scripts/check_docs.py": ["docs-project", "docs-explain"],
+    "locales": ["docs-project", "docs-system-design", "docs-explain"],
 }
 CHECKS = [
     # (script, target, extra args, expected exit code, codes that must appear in the output)
@@ -41,6 +41,13 @@ CHECKS = [
     ("docs-project/scripts/check_docs.py", "docs-good-en", ["--strict"], 0, []),
     ("docs-project/scripts/check_docs.py", "docs-bad", [], 1, ["E1", "E2", "W1", "W2"]),
     ("docs-project/scripts/check_docs.py", "docs-bad-it", [], 0, ["W2"]),
+    ("docs-project/scripts/check_docs.py", "docs-task-en", [], 1, ["E1"]),
+    ("docs-explain/scripts/context.py", "docs-task-en", ["P2-02"], 0, ["DEF", "ROW", "OUT", "IN", "HOP2", "READY", "GAP"]),
+    ("docs-explain/scripts/context.py", "docs-task-en", ["P1-01"], 0, ["READY"]),
+    ("docs-explain/scripts/context.py", "docs-task-en", ["08-ux-ui/screens/seat-map.md"], 0, ["FILE", "OUT", "IN", "GAP"]),
+    ("docs-explain/scripts/context.py", "docs-task-en", ["E-02"], 0, ["GAP"]),
+    ("docs-explain/scripts/context.py", "docs-task-en", ["seat", "map"], 0, ["HIT"]),
+    ("docs-explain/scripts/context.py", "docs-task-en", ["ZZ-99"], 1, []),
 ]
 NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 LINK_RE = re.compile(r"\]\(([^)\s#]+)")
