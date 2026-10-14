@@ -26,6 +26,7 @@ import re
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
+from urllib.parse import unquote
 
 ID = r"[A-Z][A-Z0-9]{0,5}(?:-[A-Z]{2,10})?-\d{1,4}(?:\.\d+)?"
 ID_RE = re.compile(rf"(?<![\w/.-])({ID})(?![\w-])")
@@ -36,7 +37,37 @@ STATUS_VALUES = "Draft|Review|Approved|Superseded|Accepted|Proposed|Deprecated"
 STATUS_DOC_RE = re.compile(r"(?:^>\s*|·\s*)(DOC-\d+)", re.M)
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
 VOCAB_ROW_RE = re.compile(r"^\|\s*`?([a-z0-9_]+\.[a-z0-9_]+)`?\s*\|(.*)\|\s*$")
+FENCE_RE = re.compile(r"^\s*(`{3,}|~{3,})(.*)")
 EMPTY_MARKERS = {"", "—", "-"}
+
+
+def fence_step(line: str, fence: str | None) -> tuple[str | None, bool]:
+    """Track fenced code blocks: (the open fence or None, whether this line is a fence line).
+
+    A block closes only on the same character repeated at least as often, so a
+    ````markdown template that contains ```mermaid stays one block.
+    """
+    m = FENCE_RE.match(line)
+    if not m or (m.group(1)[0] == "`" and "`" in m.group(2)):
+        return fence, False
+    if fence is None:
+        return m.group(1), True
+    if m.group(1)[0] == fence[0] and len(m.group(1)) >= len(fence) and not m.group(2).strip():
+        return None, True
+    return fence, False
+
+
+def flag_value(argv: list[str], flag: str) -> str | None:
+    """Remove `flag VALUE` from argv and return VALUE (exit 2 when VALUE is missing)."""
+    if flag not in argv:
+        return None
+    i = argv.index(flag)
+    if i + 1 >= len(argv):
+        print(f"{flag} needs a value")
+        sys.exit(2)
+    value = argv[i + 1]
+    del argv[i:i + 2]
+    return value
 
 
 def load_vocab(paths: list[Path]) -> dict[str, set[str]]:
@@ -68,11 +99,8 @@ def prefix_of(token: str) -> str:
 
 def main() -> int:
     argv = sys.argv[1:]
-    extra_vocab = []
-    if "--vocab" in argv:
-        i = argv.index("--vocab")
-        extra_vocab = [Path(argv[i + 1])]
-        del argv[i:i + 2]
+    vocab_file = flag_value(argv, "--vocab")
+    extra_vocab = [Path(vocab_file)] if vocab_file else []
     args = [a for a in argv if not a.startswith("--")]
     strict = "--strict" in argv
     root = Path(args[0] if args else "docs").resolve()
@@ -117,14 +145,14 @@ def main() -> int:
             warnings.append(f"W1 {rel}: no status line in the first 8 lines")
         status = sm.group(2).capitalize() if sm else None
 
-        in_code = False
+        fence = None
         open_q_level = None
         open_q_body: list[str] = []
         for no, line in enumerate(lines, 1):
-            if line.lstrip().startswith("```"):
-                in_code = not in_code
+            fence, is_fence = fence_step(line, fence)
+            if is_fence:
                 continue
-            if in_code:
+            if fence:
                 if path.name.startswith("00-master-plan"):
                     for d in DOC_COMMENT_RE.findall(line):
                         defined.add(d)
@@ -150,7 +178,7 @@ def main() -> int:
             for target in LINK_RE.findall(line):
                 if re.match(r"^(https?:|mailto:|#)", target):
                     continue
-                file_part = target.split("#", 1)[0]
+                file_part = unquote(target.split("#", 1)[0])
                 if file_part and not (path.parent / file_part).exists():
                     errors.append(f"E2 {rel}:{no}: broken link -> {target}")
 

@@ -8,7 +8,16 @@ Một cửa hàng nhỏ bán hàng có hạn; không bao giờ bán vượt tồ
 
 ### 1.1 Bối cảnh
 
-Hàng hóa hữu hạn, nhiều người mua cùng lúc (mục 2.1).
+Hàng hóa hữu hạn, nhiều người mua cùng lúc (mục 2.1; xem thêm mục 1.1, 3).
+
+````markdown
+```mermaid
+flowchart LR
+    A[Mẫu (không kiểm)] --> B
+```
+
+## 9. Ví dụ không phải mục thật (mục 7.7)
+````
 
 ## 2. Mục tiêu, phạm vi và trọng tâm
 

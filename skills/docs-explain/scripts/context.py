@@ -35,7 +35,8 @@ from pathlib import Path
 sys.dont_write_bytecode = True  # keep the installed skill directory clean
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from check_docs import (  # noqa: E402  (shared checker, same directory)
-    HEADING_DEF_RE, ID, ID_RE, STATUS_DOC_RE, STATUS_VALUES, TABLE_DEF_RE, alternation, load_vocab, prefix_of,
+    HEADING_DEF_RE, ID, ID_RE, STATUS_DOC_RE, STATUS_VALUES, TABLE_DEF_RE, alternation, fence_step, flag_value,
+    load_vocab, prefix_of,
 )
 
 FULL_ID_RE = re.compile(rf"^{ID}$")
@@ -109,17 +110,17 @@ class Index:
             self.defs[f"ADR-{m.group(1)}"].append(Def(f"ADR-{m.group(1)}", rel, 1, "doc", len(lines), 0,
                                                       short(lines[0].lstrip("# ") if lines else path.name)))
         plan = path.name.startswith("00-master-plan")
-        in_code = False
+        fence = None
         header: list[str] = []
         prev_table = False
         open_q_level, open_q_start, open_q_body = None, 0, []
         heading_defs: list[Def] = []
         for no, line in enumerate(lines, 1):
-            if line.lstrip().startswith("```"):
-                in_code = not in_code
+            fence, is_fence = fence_step(line, fence)
+            if is_fence:
                 f.code_lines.add(no)
                 continue
-            if in_code:
+            if fence:
                 f.code_lines.add(no)
                 if not plan:
                     for tok in ID_RE.findall(line):
@@ -425,13 +426,12 @@ def query_words(index: Index, words: str, limit: int) -> int:
 
 def main() -> int:
     argv = sys.argv[1:]
-    depth, limit = 2, 40
-    for flag in ("--depth", "--max"):
-        if flag in argv:
-            i = argv.index(flag)
-            value = int(argv[i + 1])
-            depth, limit = (value, limit) if flag == "--depth" else (depth, value)
-            del argv[i:i + 2]
+    try:
+        depth = int(flag_value(argv, "--depth") or 2)
+        limit = int(flag_value(argv, "--max") or 40)
+    except ValueError:
+        print("--depth and --max take a number")
+        return 2
     args = [a for a in argv if not a.startswith("--")]
     root = Path("docs")
     if len(args) >= 2 and Path(args[0]).is_dir():

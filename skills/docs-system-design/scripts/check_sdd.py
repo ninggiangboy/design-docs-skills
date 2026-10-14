@@ -32,6 +32,7 @@ ID_RE = re.compile(r"(?<![\w-])((?:FR|NFR|UC|EXP)-\d{1,3}(?:\.\d+)?)(?![\w-])")
 TABLE_DEF_RE = re.compile(r"^\|\s*\**((?:FR|NFR|UC|EXP)-\d{1,3}(?:\.\d+)?)\**(?:\s*\([^)]*\))?\s*\|")
 MERMAID_NODE_RE = re.compile(r"\b\w+\s*[\[\({]+(?!\")([^\]\)}\"]*[()\[\]][^\]\)}\"]*)[\]\)}]+")
 VOCAB_ROW_RE = re.compile(r"^\|\s*`?([a-z0-9_]+\.[a-z0-9_]+)`?\s*\|(.*)\|\s*$")
+FENCE_RE = re.compile(r"^\s*(`{3,}|~{3,})(.*)")
 
 
 def load_vocab(paths: list[Path]) -> dict[str, set[str]]:
@@ -70,15 +71,19 @@ def ref_patterns(vocab: dict[str, set[str]]) -> list[re.Pattern]:
     return patterns
 
 
-def expand(numbers: str) -> list[str]:
-    """'1.1, 1.3' -> ['1.1', '1.3']; '8.2 và 4' -> ['8.2', '8.4'] (a bare number after a dotted one is a sibling)."""
+def expand(numbers: str) -> list[tuple[str, ...]]:
+    """Each referenced section as its possible readings.
+
+    '1.1, 1.3' -> [('1.1',), ('1.3',)]; '8.2 và 4' -> [('8.2',), ('8.4', '4')]: a bare number after a
+    dotted one is either a sibling (8.4) or a top-level section (4), so either one existing is enough.
+    """
     found = re.findall(NUM, numbers)
-    out = [found[0]]
+    out = [(found[0],)]
     for extra in found[1:]:
         if "." in extra or "." not in found[0]:
-            out.append(extra)
+            out.append((extra,))
         else:
-            out.append(f"{found[0].split('.')[0]}.{extra}")
+            out.append((f"{found[0].split('.')[0]}.{extra}", extra))
     return out
 
 
@@ -87,6 +92,9 @@ def main() -> int:
     extra_vocab = []
     if "--vocab" in argv:
         i = argv.index("--vocab")
+        if i + 1 >= len(argv):
+            print("--vocab needs a file")
+            return 2
         extra_vocab = [Path(argv[i + 1])]
         del argv[i:i + 2]
     args = [a for a in argv if not a.startswith("--")]
@@ -94,6 +102,9 @@ def main() -> int:
         print(__doc__)
         return 2
     path = Path(args[0])
+    if not path.is_file():
+        print(f"not a file: {path}")
+        return 2
     lines = path.read_text(encoding="utf-8").splitlines()
     locales = sorted((Path(__file__).resolve().parent.parent / "locales").glob("*.md"))
     patterns = ref_patterns(load_vocab(locales + extra_vocab))
@@ -104,26 +115,27 @@ def main() -> int:
     defined: Counter = Counter()
     def_line: dict[str, int] = {}
     refs: dict[str, list[int]] = defaultdict(list)
-    sec_refs: list[tuple[int, str]] = []
+    sec_refs: list[tuple[int, tuple[str, ...]]] = []
 
     expected_h2 = 1
     current_h2 = None
     expected_h3 = 1
-    in_code = False
+    fence = None
     fence_line = 0
     is_flowchart = False
 
     for no, line in enumerate(lines, 1):
-        stripped = line.strip()
-        if stripped.startswith("```"):
-            if not in_code:
-                in_code, fence_line = True, no
+        fm = FENCE_RE.match(line)
+        if fm and not (fm.group(1)[0] == "`" and "`" in fm.group(2)):
+            if fence is None:
+                fence, fence_line = fm.group(1), no
                 nxt = lines[no] if no < len(lines) else ""
-                is_flowchart = stripped[3:].strip() == "mermaid" and bool(re.match(r"^\s*(flowchart|graph)\b", nxt))
-            else:
-                in_code = False
-            continue
-        if in_code:
+                is_flowchart = fm.group(2).strip() == "mermaid" and bool(re.match(r"^\s*(flowchart|graph)\b", nxt))
+                continue
+            if fm.group(1)[0] == fence[0] and len(fm.group(1)) >= len(fence) and not fm.group(2).strip():
+                fence = None
+                continue
+        if fence:
             if is_flowchart:
                 for m in MERMAID_NODE_RE.finditer(line):
                     if "--" not in m.group(1):
@@ -175,12 +187,12 @@ def main() -> int:
                 spans.append((m.start(1), m.end(1)))
                 sec_refs.extend((no, ref) for ref in expand(m.group(1)))
 
-    if in_code:
+    if fence:
         errors.append(f"E5 code fence opened at line {fence_line} is never closed")
 
-    for no, ref in sec_refs:
-        if ref not in sections:
-            errors.append(f"E2 line {no}: section {ref} does not exist")
+    for no, readings in sec_refs:
+        if not any(r in sections for r in readings):
+            errors.append(f"E2 line {no}: section {' or '.join(readings)} does not exist")
 
     for tok, where in sorted(refs.items()):
         if tok in defined or ("." in tok and tok.split(".", 1)[0] in defined):

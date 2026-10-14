@@ -5,6 +5,18 @@
 
 Việc P1-01 dùng tài liệu này.
 
+Mẫu lồng nhau: khối ```` chỉ đóng bởi ```` nên link và mục bên trong không bị đọc.
+
+````markdown
+```text
+[ví dụ](khong-ton-tai.md)
+```
+
+## 9. Câu hỏi còn mở
+
+- Câu hỏi mẫu chưa trả lời.
+````
+
 ## 9. Câu hỏi còn mở
 
 Không có.
