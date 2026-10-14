@@ -91,6 +91,7 @@ A "Basic" module needs only 1–3 paragraphs or one table.
 - Opening sentence: one or several apps, areas, lazy-loading of heavy parts.
 - Screen flow per role (`flowchart LR`).
 - Table `Area · Screen · Content` (or `Screen · Content · Serves`).
+- UI language(s) shown to end users, and whether i18n is needed.
 - Technical notes: bundle splitting, state management, real-time, server-based clocks, optimistic UI, accessibility, devices, empty/loading/error states.
 
 ### Deployment, operations and fault tolerance

@@ -18,7 +18,7 @@ Goal: when a task starts, everything needed for it is already in the docs. Nobod
 
 ## §0. How to use this document
 
-- **0.1 Language** — the block defined in `language.md` §3: output language and vocabulary source, language of code/UI/logs/commits, who decided and when. Always first.
+- **0.1 Language** — the block defined in `language.md` §3: output language and vocabulary source, UI language, code/logs/commits in English, who decided and when. Always first.
 - Reading order for newcomers: §1 → §4 → the current phase in §5 → the documents that phase references.
 - **Doc gate rule:** every phase has a task `Pn-00` that reviews documents; a phase starts only when the documents it needs are `Approved` (§3.3).
 - The identifier table (from `conventions.md` §1, keeping only prefixes this project uses, plus any project-specific prefix).

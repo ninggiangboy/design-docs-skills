@@ -95,7 +95,7 @@ Only the Owner moves a document to Approved, unless the Owner has delegated it.
 
 ## 5. Language
 
-The output language, and the language of code, UI strings, logs and commits, are chosen once per project and recorded in master plan §0 (`references/language.md`). Defaults offered: documents in the SDD's language; everything else in English.
+The output language and the UI language are chosen once per project and recorded in master plan §0 (`references/language.md`). Code, logs, API error codes, commits and PR titles are always English.
 
 - Technical terms stay in English when the local term is awkward; code names go in backticks.
 - UI strings shown in documents are quoted exactly as they appear on screen, in the UI language.

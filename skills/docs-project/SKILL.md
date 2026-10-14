@@ -36,7 +36,7 @@ References:
 
 Read master plan §0.1. It names the output language and the vocabulary source (`locales/<code>.md` or Appendix B of the plan). Load that vocabulary and its Conventions; write every heading, label and sentence in that language.
 
-If §0.1 is missing (a plan made before this rule), **ask the user** for the output language and the code/UI language (`language.md` §1), add the block to §0 of the plan, add Appendix B if the vocabulary has to be generated, and add a decision-log line. Then continue. Never ask again once §0.1 exists.
+If §0.1 is missing (a plan made before this rule), choose the output language and the UI language as in `language.md` §1 (code is always English), add the block to §0 of the plan, add Appendix B if the vocabulary has to be generated, and add a decision-log line. Then continue. Never ask again once §0.1 exists.
 
 ## Writing one document
 

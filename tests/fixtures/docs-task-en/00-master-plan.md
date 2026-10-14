@@ -9,7 +9,8 @@
 | | |
 | --- | --- |
 | Documents | English (`en`) · vocabulary: shipped `locales/en.md` |
-| Code, UI strings, logs, commits | English |
+| Code, logs, API error codes, commits, PR titles | English |
+| UI (strings shown to end users) | English |
 
 ## 3. Documents to write
 

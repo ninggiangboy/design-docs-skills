@@ -120,7 +120,7 @@ Walk through the SDD section by section and ask the questions below. Every quest
 - Resource budget on the target machine (RAM per container); is each image still published; licenses.
 
 **Frontend and UX** (when there is a UI)
-- Stack, routing, state, data fetching, real-time; maps and charts; authentication in a SPA; UI language; runtime configuration.
+- Stack, routing, state, data fetching, real-time; maps and charts; authentication in a SPA; how i18n is done when the UI has several languages (the UI language itself is in plan §0.1); runtime configuration.
 
 **Operations, testing, experiments**
 - Environments (local compose, k8s, cloud), how to deploy, whether CI runners have enough resources.

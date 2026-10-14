@@ -1,6 +1,6 @@
 ---
 name: docs-master-plan
-description: Turns a system design document (SDD) into a decision register (docs/00-decision-register.md), a gated master plan (docs/00-master-plan.md) and a docs index (docs/README.md). The master plan lists every document to write with its required content and gate, every task by phase with acceptance criteria, and a traceability matrix; the register turns every gap in the SDD into a decision with a proposed option. Asks for the output language on first use and records it in the plan. Use when the user wants a master plan or decision register from an SDD, to analyze an SDD for gaps, to prepare the doc set of a new project, or to apply the Owner's decisions afterwards (also in Vietnamese, e.g. "lập master plan từ SDD", "phân tích SDD", "tạo sổ quyết định"). The next step is the docs-project skill.
+description: Turns a system design document (SDD) into a decision register (docs/00-decision-register.md), a gated master plan (docs/00-master-plan.md) and a docs index (docs/README.md). The master plan lists every document to write with its required content and gate, every task by phase with acceptance criteria, and a traceability matrix; the register turns every gap in the SDD into a decision with a proposed option. Writes in English when both the user and the SDD use English, otherwise asks English or the other language, and records the choice in the plan. Use when the user wants a master plan or decision register from an SDD, to analyze an SDD for gaps, to prepare the doc set of a new project, or to apply the Owner's decisions afterwards (also in Vietnamese, e.g. "lập master plan từ SDD", "phân tích SDD", "tạo sổ quyết định"). The next step is the docs-project skill.
 argument-hint: "<path to SDD> | apply-decisions"
 license: MIT
 ---
@@ -55,13 +55,15 @@ Read it all, not skimming; read long files in chunks to the end. Keep a scratch 
 
 ### 3. Ask (one AskUserQuestion, at most 4 questions)
 
-Always ask, even if the answers look obvious:
+Language (`language.md` §1): if the user writes in English **and** the SDD is in English, use English for everything and do not ask. Otherwise (including an SDD in another language) always ask:
 
-1. **Output language of the documents** (`language.md` §1): the SDD's language first, then English, then other likely languages; "Other" accepts any language.
-2. **Language of code, UI strings, logs, commits**: default English.
+1. **Output language of the documents**: the SDD's language if not English, then the user's language if different, then English; "Other" accepts any language.
+
+Code, logs, API error codes, commits and PR titles are always English; never ask.
 
 Ask only when not inferable:
 
+2. **UI language** (when there is a UI): inferred from the SDD's users and market; ask only when the SDD does not make it clear (`language.md` §1).
 3. Scope: build everything, or known cuts.
 4. While writing docs later, may Claude decide small questions itself (recorded as `dr.delegated`)?
 

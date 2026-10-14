@@ -32,9 +32,9 @@ Default file name: `<project-slug>-sdd.md` at the root of the current repository
 
 ## Write
 
-### 1. Ask the output language (always)
+### 1. Choose the output language
 
-Before anything else, ask which language the SDD should be written in (`language.md` §1), even if the user's message makes it look obvious. Offer the language of the user's messages first, then English, then other likely languages; "Other" accepts any language. Load `locales/<code>.md` if it exists; otherwise translate the `sdd.*` keys of `locales/en.md` yourself and use them consistently (the master plan will record the full vocabulary later).
+Before anything else, choose the language of the SDD (`language.md` §1). If the user writes in English, write in English without asking. Otherwise ask, offering the user's language first, then English; "Other" accepts any language. Load `locales/<code>.md` if it exists; otherwise translate the `sdd.*` keys of `locales/en.md` yourself and use them consistently (the master plan will record the full vocabulary later).
 
 ### 2. Gather
 

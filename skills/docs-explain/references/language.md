@@ -2,23 +2,28 @@
 
 Shared by `docs-system-design`, `docs-master-plan` and `docs-project`. Everything the skills write for the user (SDD, decision register, master plan, docs) uses one **output language** per project. The instructions in the skills are English; the output is not necessarily English.
 
-## 1. When to ask
+## 1. Choosing the language
 
-Ask **once per project, on first use, even if the language looks obvious** (the user writing in one language does not mean they want the documents in it):
+The output language is chosen **once per project, on first use**:
 
-| Skill | Ask when | Record in |
+| Skill | Choose when | Record in |
 | --- | --- | --- |
 | `docs-system-design` | Creating a new SDD | The SDD itself is written in that language; no other record |
-| `docs-master-plan` | Always when creating the plan (the SDD language is the first option, not an assumption) | Master plan §0 "Language" (§3 below) |
+| `docs-master-plan` | Creating the plan | Master plan §0 "Language" (§3 below) |
 | `docs-project` | Only when the master plan has no "Language" block (older plan) | Add the block to master plan §0, then continue |
 
-Never ask again once the master plan records a language. Revising an existing SDD keeps its language without asking.
+Never choose again once the master plan records a language. Revising an existing SDD keeps its language without asking.
 
-Ask with one AskUserQuestion (other questions of the same skill may go in the same call):
+Look at the language of the user's messages and, for the master plan, the language of the SDD:
 
-- Question: "Which language should the documents be written in?"
-- Options, most likely first: the language of the existing SDD or of the user's messages, then English, then one or two other likely languages. "Other" lets the user type any language.
-- For the master plan, ask a second question in the same call: "Which language for code, UI strings, logs and commits?" Default English.
+- **All English** (the user writes in English and the SDD, if any, is in English): write in English and do not ask.
+- **Anything else** (the user writes in another language, or the SDD is in another language even if the user writes in English): ask with one AskUserQuestion (other questions of the same skill may go in the same call):
+  - Question: "Which language should the documents be written in?"
+  - Options: the non-English language first (the SDD's language, then the user's if different), then English. "Other" still lets the user type any language.
+
+**Code, logs, API error codes, commits and PR titles are always English.** Never ask; record it in the Language block.
+
+**UI language** (master plan only, when there is a UI) is a product choice, not the documents' language. Infer it from the SDD: who the end users are, which country or market, whether several languages are needed. When the SDD makes it clear, record it without asking. When it does not, ask in the same AskUserQuestion call ("Which language will the UI show to end users?"): the most likely language from the SDD first, then English, then "Several (i18n)"; when everything is English and the SDD gives no hint, assume English and note it as an assumption instead of asking. With several UI languages, record the list and the default one; how i18n is done is a DR in the register.
 
 ## 2. Vocabulary
 
@@ -41,15 +46,16 @@ Put it in §0 of the master plan, under the `plan.language` heading:
 | | |
 | --- | --- |
 | Documents (`docs/`, decision register, master plan) | Tiếng Việt (`vi`) · vocabulary: shipped `locales/vi.md` |
-| Code, UI strings, logs, API errors, commits, PR titles | English |
+| Code, logs, API error codes, commits, PR titles | English |
+| UI (strings shown to end users) | Tiếng Việt · from SDD §3.1 (users in Vietnam) |
 | Decided | 2026-10-05, Owner |
 ```
 
-For a generated vocabulary write `vocabulary: Appendix B`. Labels in the left column are written in the output language. Also add a line to the decision log ("Documents in <language>; code and UI in <language>"). Changing the language later is a decision: new decision-log line, update the block, and do not translate approved documents unless the Owner asks.
+For a generated vocabulary write `vocabulary: Appendix B`. Labels in the left column are written in the output language. Also add a line to the decision log ("Documents in <language>; UI in <language>; code in English"). Changing the language later is a decision: new decision-log line, update the block, and do not translate approved documents unless the Owner asks.
 
 ## 4. Writing in the output language
 
 - All prose in the output language, following the Conventions of the vocabulary file.
 - Keep widely used English technical terms when the local term is awkward or rare; be consistent and add them to the glossary.
-- UI strings, log messages and error codes shown in documents are quoted in the language chosen for code and UI.
+- UI strings shown in documents are quoted in the UI language; log messages and error codes in English.
 - Examples in the references are illustrations of depth and structure, not text to copy; write new sentences in the output language.

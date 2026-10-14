@@ -62,7 +62,7 @@ cp -r design-docs-skills/skills/* ~/.claude/skills/
 focused on keeping stock consistent between branches while offline.
 ```
 
-The skill first asks which language to write in, then asks only what changes the design, sends an outline for approval, and writes section by section. Keep talking in the same session; each turn re-reads the file, edits minimally, and updates everything the change affects:
+The skill writes in English if you write in English; otherwise it first asks whether to write in English or your language. Then it asks only what changes the design, sends an outline for approval, and writes section by section. Keep talking in the same session; each turn re-reads the file, edits minimally, and updates everything the change affects:
 
 ```text
 Add an options analysis to section 8: CRDTs, event sourcing, a central lock.
@@ -77,7 +77,7 @@ Run a full consistency pass.
 /docs-master-plan inventory-sdd.md
 ```
 
-The skill always asks for the document language and the language of code, UI and commits, and records both in §0.1 of the plan. Read the DRs, then decide:
+If you write in English and the SDD is in English, everything is in English; otherwise (including a non-English SDD) the skill asks for the document language (English or the other language). The UI language comes from the SDD's users and market, and is asked only when the SDD does not say. Code, logs, API error codes and commits are always English. All of this is recorded in §0.1 of the plan. Read the DRs, then decide:
 
 ```text
 /docs-master-plan apply-decisions
