@@ -1,35 +1,63 @@
+<div align="center">
+
 # design-docs-skills
 
-Five agent skills that take a project from an idea to a documentation set complete enough to implement without asking, and then explain it to the developers who implement it: **system design document → decision register and master plan → gated project docs → task briefs and answers**. The documents are written in the language you choose; templates and fixed labels ship for eight languages, and any other language works through a generated vocabulary.
+**From an idea to a documentation set you can implement without asking.**
+
+Five agent skills for Claude Code (and other agents) that write the system design, turn its gaps into decisions, produce gated project docs, and brief the developers who build from them.
+
+[![validate](https://github.com/ninggiangboy/design-docs-skills/actions/workflows/validate.yml/badge.svg)](https://github.com/ninggiangboy/design-docs-skills/actions/workflows/validate.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Skills](https://img.shields.io/badge/skills-5-8A2BE2)
+![Languages](https://img.shields.io/badge/languages-8%20shipped%20%2B%20any-2EA44F)
+
+[Quick start](#quick-start) · [The skills](#the-skills) · [Walkthrough](#walkthrough) · [Languages](#languages) · [Method](#method) · [Development](#development)
+
+</div>
+
+---
+
+## Why
+
+Design docs usually fail in one of two ways: they stop at a high-level SDD that leaves every hard question open, or they grow into a pile of documents nobody can trace back to a decision. These skills take one path through the whole process:
+
+- **Nothing is decided silently.** Every place the design does not say *exactly how* becomes a numbered decision (DR) with a proposed option, waiting for the Owner.
+- **Nothing starts before its docs are ready.** Each phase has a gate: its tasks begin only when the documents they need are `Approved`.
+- **Nothing is guessed.** When a developer asks something the docs do not answer, the skill says so, offers options, and records the gap.
+
+## How it works
 
 ```mermaid
 flowchart LR
-    I["Idea, notes"] --> S["/docs-system-design<br/>write and revise the SDD"]
-    S --> P["/docs-master-plan<br/>decision register + master plan"]
-    P --> D["/docs-project<br/>write docs gate by gate"]
-    D --> E["/docs-explain, /docs-explain-kid<br/>brief a task, answer questions"]
-    E --> C["Implement from plan and docs"]
+    I["💡 Idea, notes"] --> S["<b>/docs-system-design</b><br/>write and revise the SDD"]
+    S --> P["<b>/docs-master-plan</b><br/>decision register + master plan"]
+    P --> D["<b>/docs-project</b><br/>write docs gate by gate"]
+    D --> E["<b>/docs-explain</b><br/><b>/docs-explain-kid</b><br/>brief a task, answer questions"]
+    E --> C["🛠️ Implement"]
     E -. "gaps become proposed DRs" .-> P
     S -. "many revision rounds" .-> S
     P -. "Owner decides DRs" .-> P
 ```
 
-| Skill | Input | Output |
-| --- | --- | --- |
-| `docs-system-design` | An idea, notes, or an existing SDD | `<project>-sdd.md`: context, core problem, scope, requirements, architecture, deep domain sections (invariants, state machines, races, options analysis), data, API, UI, fault tolerance, experiments, plan, risks. Revised over many turns in the same session |
-| `docs-master-plan` | The SDD | `docs/00-decision-register.md` (every place the SDD does not say "exactly how" becomes a DR with a proposed option), `docs/00-master-plan.md` (documents to write with required content and gates, tasks per phase with acceptance criteria, traceability matrix), `docs/README.md` |
-| `docs-project` | The master plan and decision register | The `DOC-xx` documents, ADRs, runbooks, experiments, screen specs…, each matching its required content and gate in the plan |
-| `docs-explain` | A task, feature, use case, flow, endpoint or screen, and the developer's questions | A brief in chat (what and why, done means, read first, how it works, contracts, rules, code to create, readiness, gaps) and cited answers; unanswered questions become proposed DRs when you agree |
-| `docs-explain-kid` | The same, for a junior or less technical developer | The same facts and rules, explained from zero where beginners go wrong: everyday analogies, tiny examples, ASCII diagrams (who talks to whom, steps in time, race timelines, state changes, layer maps, wireframes), data before and after, concept cards (database, transaction, index, Redis, nginx, queues, race conditions…; web basics are assumed), small steps each with how to check it and the usual mistake, and numbered questions to ask next |
+## Quick start
 
-## Install
-
-Requires [Node.js](https://nodejs.org) for `npx`, and Python 3.10+ for the checker scripts bundled with the skills.
+Requires [Node.js](https://nodejs.org) for `npx` and Python 3.10+ for the bundled checker scripts.
 
 ```bash
-# All five skills for Claude Code, available in every project
 npx skills add ninggiangboy/design-docs-skills -g -a claude-code
+```
 
+Then, in Claude Code:
+
+```text
+/docs-system-design An inventory system for a chain of stores, focused on
+keeping stock consistent between branches while offline.
+```
+
+<details>
+<summary><b>More install options</b></summary>
+
+```bash
 # Only for the current project (.claude/skills/), committed with the repo
 npx skills add ninggiangboy/design-docs-skills -a claude-code
 
@@ -53,16 +81,47 @@ git clone https://github.com/ninggiangboy/design-docs-skills.git
 cp -r design-docs-skills/skills/* ~/.claude/skills/
 ```
 
-## Usage
+</details>
 
-### 1. Write the SDD
+## The skills
+
+| | Skill | Input | Output |
+| :-: | --- | --- | --- |
+| 1 | [`docs-system-design`](skills/docs-system-design/SKILL.md) | An idea, notes, or an existing SDD | `<project>-sdd.md`, revised over many turns in the same session |
+| 2 | [`docs-master-plan`](skills/docs-master-plan/SKILL.md) | The SDD | Decision register, master plan, docs index |
+| 3 | [`docs-project`](skills/docs-project/SKILL.md) | The master plan and decision register | `DOC-xx` documents, ADRs, runbooks, experiments, screen specs… |
+| 4 | [`docs-explain`](skills/docs-explain/SKILL.md) | A task, feature, flow, endpoint or screen, plus questions | A task brief in chat and cited answers |
+| 5 | [`docs-explain-kid`](skills/docs-explain-kid/SKILL.md) | The same, for a junior developer | The same facts, explained from zero |
+
+<details>
+<summary><b>What each skill produces, in detail</b></summary>
+
+**`docs-system-design`** writes the SDD: context, core problem, investment per module, scope, requirements, architecture, deep domain sections (invariants, state machines, races, options analysis), data, API, UI, fault tolerance, experiments, plan and risks. Every follow-up message in the session re-reads the file, edits minimally, and updates everything the change affects.
+
+**`docs-master-plan`** reads the SDD and writes:
+
+- `docs/00-decision-register.md`: every gap in the SDD as a DR with a proposed option;
+- `docs/00-master-plan.md`: documents to write with their required content and gate, tasks per phase with acceptance criteria, and a traceability matrix;
+- `docs/README.md`: the index of the docs tree.
+
+**`docs-project`** writes, reviews and tracks each document defined by the plan, following its required content and gate, using decided DRs, and recording new decisions as DRs.
+
+**`docs-explain`** builds a brief for the developer about to implement something: what and why, what done means, what to read first, how it works step by step, contracts (endpoints, tables, configuration, errors), rules and edge cases, where the code goes, readiness and gaps. Answers cite their source; unanswered questions become proposed DRs when you agree.
+
+**`docs-explain-kid`** keeps the same facts and rules but explains from zero where beginners go wrong: everyday analogies, tiny examples, ASCII diagrams (who talks to whom, steps in time, race timelines, state changes, layer maps, wireframes), data before and after, concept cards (database, transaction, index, Redis, nginx, queues, race conditions…; web basics are assumed), small steps each with a check and the usual mistake, and numbered questions to ask next.
+
+</details>
+
+## Walkthrough
+
+### 1 · Write the SDD
 
 ```text
 /docs-system-design An inventory system for a chain of stores, a graduation thesis,
 focused on keeping stock consistent between branches while offline.
 ```
 
-The skill writes in English if you write in English; otherwise it first asks whether to write in English or your language. Then it asks only what changes the design, sends an outline for approval, and writes section by section. Keep talking in the same session; each turn re-reads the file, edits minimally, and updates everything the change affects:
+The skill asks only what changes the design, sends an outline for approval, then writes section by section. Keep talking in the same session to revise it:
 
 ```text
 Add an options analysis to section 8: CRDTs, event sourcing, a central lock.
@@ -71,20 +130,20 @@ Move the waiting room to "Later".
 Run a full consistency pass.
 ```
 
-### 2. Build the decision register and master plan
+### 2 · Build the decision register and master plan
 
 ```text
 /docs-master-plan inventory-sdd.md
 ```
 
-If you write in English and the SDD is in English, everything is in English; otherwise (including a non-English SDD) the skill asks for the document language (English or the other language). The UI language comes from the SDD's users and market, and is asked only when the SDD does not say. Code, logs, API error codes and commits are always English. All of this is recorded in §0.1 of the plan. Read the DRs, then decide:
+Read the proposed DRs, then decide:
 
 ```text
 /docs-master-plan apply-decisions
 Accept every proposal except DR-07: use RabbitMQ instead of Kafka.
 ```
 
-### 3. Write the docs from the plan
+### 3 · Write the docs from the plan
 
 ```text
 /docs-project next          # next document from Phase 0
@@ -94,7 +153,7 @@ Accept every proposal except DR-07: use RabbitMQ instead of Kafka.
 /docs-project status        # DOC × gate × status table
 ```
 
-### 4. Start a task with a brief, ask while coding
+### 4 · Start a task, ask while coding
 
 ```text
 /docs-explain P2-03                 # brief: what, why, done means, flow, contracts, code, readiness, gaps
@@ -104,12 +163,12 @@ Accept every proposal except DR-07: use RabbitMQ instead of Kafka.
 /docs-explain ready P2              # Task · State · Ready · Blockers for a whole phase
 ```
 
-Answers come in the language you ask in, cite `DOC-xx §n`, `DR-xx`, `FL-xx` or `path:line`, and mark what comes from Draft documents or Proposed DRs. When the docs do not say, the skill says so instead of guessing, offers options, and with your agreement records the question as a proposed DR and an open question of the affected document.
+Answers come in the language you ask in, cite `DOC-xx §n`, `DR-xx`, `FL-xx` or `path:line`, and flag anything that comes from Draft documents or Proposed DRs.
 
-For a developer who is still learning the basics, `docs-explain-kid` takes the same commands and explains from zero; it also answers pure concept questions and adapts as you go:
+For a developer still learning the basics, `docs-explain-kid` takes the same commands, also answers pure concept questions, and adapts as you go:
 
 ```text
-/docs-explain-kid P2-03             # the story, concepts to know first, steps with how to check each, pitfalls
+/docs-explain-kid P2-03             # the story, concepts to know first, steps with checks, pitfalls
 /docs-explain-kid Redis là gì, dự án mình dùng nó để làm gì?
 /docs-explain-kid simpler           # or "deeper", "give an example", "I already know SQL"
 /docs-explain-kid 2                 # answer suggested question 2, then suggest the next ones
@@ -120,61 +179,66 @@ For a developer who is still learning the basics, `docs-explain-kid` takes the s
 ```text
 <project>-sdd.md
 docs/
-  README.md
-  00-master-plan.md
-  00-decision-register.md
-  01-product/        vision, personas, requirements, use cases, feature catalog
-  02-glossary.md
-  03-architecture/   context and containers, data flows, contracts, quality attributes, stack
-  04-adr/
-  05-data/           sources, data model, data quality rules, DB roles, lifecycle
-  06-design/         one document per component, detailed flows (sequence UI → API → service → DB per use case),
-                     plus security, observability, configuration, errors
-  07-api/
-  08-ux-ui/          IA, design system, one file per screen, microcopy
-  09-operations/     local dev, deployment, CI/CD, runbooks, backup
-  10-testing/        test strategy, experiments, demo script
+├── README.md
+├── 00-master-plan.md
+├── 00-decision-register.md
+├── 01-product/        vision, personas, requirements, use cases, feature catalog
+├── 02-glossary.md
+├── 03-architecture/   context and containers, data flows, contracts, quality attributes, stack
+├── 04-adr/
+├── 05-data/           sources, data model, data quality rules, DB roles, lifecycle
+├── 06-design/         one document per component, detailed flows (UI → API → service → DB),
+│                      security, observability, configuration, errors
+├── 07-api/
+├── 08-ux-ui/          IA, design system, one file per screen, microcopy
+├── 09-operations/     local dev, deployment, CI/CD, runbooks, backup
+└── 10-testing/        test strategy, experiments, demo script
 ```
 
 Groups that do not apply (no UI, no AI, no experiments…) are left out by the master plan.
 
 ## Languages
 
-Asked once per project, on first use, even when it looks obvious; recorded in master plan §0.1 and used by every later step.
+Documents are written in the language you choose; skill instructions, code, logs, API error codes and commits are always English.
 
-- **Shipped vocabularies** in `skills/*/locales/`: English (`en`), Vietnamese (`vi`), Japanese (`ja`), Simplified Chinese (`zh`), Korean (`ko`), French (`fr`), Spanish (`es`), German (`de`). Each maps the 263 fixed headings and labels of the templates (SDD sections, master plan, decision register, ADR, use case, endpoint, screen, experiment, runbook…) and lists number, date and punctuation conventions.
-- **Any other language**: the skill translates the English vocabulary itself and stores it as Appendix B of the master plan, so every document keeps the same terms. The checker scripts read that appendix too.
-- IDs (`FR-01`, `DOC-14`), status values (`Draft`, `Approved`…), code, file and folder names stay the same in every language.
-
-To add a shipped language, copy `locales/en.md` in `skills/docs-master-plan/`, add a third column, fill the Conventions section, and run `python3 scripts/validate.py --fix`.
+| | |
+| --- | --- |
+| **When it asks** | Never if you and the SDD both use English. Otherwise once per project, on first use: your language or English. |
+| **Where it is recorded** | Master plan §0.1, read by every later step. |
+| **UI language** | Inferred from the SDD's users and market; asked only when the SDD does not say. |
+| **Shipped vocabularies** | 🇬🇧 `en` · 🇻🇳 `vi` · 🇯🇵 `ja` · 🇨🇳 `zh` · 🇰🇷 `ko` · 🇫🇷 `fr` · 🇪🇸 `es` · 🇩🇪 `de`, each mapping about 290 fixed headings and labels plus number, date and punctuation conventions. |
+| **Any other language** | The skill translates the English vocabulary and stores it as Appendix B of the master plan; the checkers read it too. |
+| **Never translated** | IDs (`FR-01`, `DOC-14`), status values (`Draft`, `Approved`…), code, file and folder names. |
 
 ## Method
 
-- **Doc gates.** Every phase has a task `Pn-00`: a phase starts only when the documents it needs are `Approved`.
-- **Decision register.** No silent decisions inside documents: every choice the SDD does not make is a DR (`Proposed → Decided / Changed`) with who decided it and which documents it goes into. Architecture-level DRs become ADRs.
-- **Stable identifiers.** `FR`, `NFR`, `UC`, `F-<GROUP>`, `DOC`, `ADR`, `DR`, `Pn-xx`, `S`, `E`, `DQ`, `EXP`, `RB`, and one test-ID prefix per document. The checker verifies every referenced ID is defined.
-- **Single source of truth.** Terms in the glossary, configuration keys in the configuration reference, metrics in observability, tables in the data documents, endpoints in the API catalog.
+| Principle | In practice |
+| --- | --- |
+| **Doc gates** | Every phase has a task `Pn-00`: the phase starts only when the documents it needs are `Approved`. |
+| **Decision register** | Every choice the SDD does not make is a DR (`Proposed → Decided / Changed`) with who decided it and which documents it goes into. Architecture-level DRs become ADRs. |
+| **Stable identifiers** | `FR`, `NFR`, `UC`, `F-<GROUP>`, `DOC`, `ADR`, `DR`, `Pn-xx`, `S`, `E`, `DQ`, `EXP`, `RB`, and one test-ID prefix per document. The checker verifies that every referenced ID is defined. |
+| **Single source of truth** | Terms in the glossary, configuration keys in the configuration reference, metrics in observability, tables in the data documents, endpoints in the API catalog. |
 
 The structure was distilled from two real projects: a research data pipeline (49 documents, 32 ADRs, about 110 DRs) and a ticket booking system built for correctness under high load.
 
-## Repository layout
+## Development
 
 ```text
 skills/
-  docs-system-design/   SKILL.md, references/ (language, structure, style, revision), locales/, scripts/check_sdd.py
-  docs-master-plan/     SKILL.md, references/ (language, conventions, decision-register, doc-catalog, master-plan, templates), locales/, scripts/check_docs.py
-  docs-project/         SKILL.md, references/ (language, conventions, doc-guide, templates), locales/, scripts/check_docs.py
-  docs-explain/         SKILL.md, references/ (briefing, language, conventions), locales/, scripts/ (context.py, check_docs.py)
-  docs-explain-kid/     SKILL.md, references/ (plain-language, diagrams, concepts, briefing, language, conventions), locales/, scripts/
-scripts/validate.py     frontmatter, links, locale consistency, shared-file sync, checker scripts on fixtures
+  docs-system-design/   SKILL.md, references/, locales/, scripts/check_sdd.py
+  docs-master-plan/     SKILL.md, references/, locales/, scripts/check_docs.py
+  docs-project/         SKILL.md, references/, locales/, scripts/check_docs.py
+  docs-explain/         SKILL.md, references/, locales/, scripts/ (context.py, check_docs.py)
+  docs-explain-kid/     SKILL.md, references/, locales/, scripts/
+scripts/validate.py     frontmatter, links, locale consistency, shared-file sync, checkers on fixtures
 tests/fixtures/         sample SDDs and docs trees, valid and broken, in several languages
 ```
 
-Each skill is self-contained so it can be installed alone; shared files (`locales/`, `language.md`, `conventions.md`, `templates.md`, `check_docs.py`) therefore exist in more than one skill. The source copy lives in `docs-master-plan` (`briefing.md` and `context.py` in `docs-explain`); edit it there, then:
+Each skill is self-contained so it can be installed alone, so shared files (`locales/`, `language.md`, `conventions.md`, `templates.md`, `check_docs.py`) exist in more than one skill. **Edit the source copy only**, in `docs-master-plan` (`briefing.md` and `context.py` in `docs-explain`), then sync:
 
 ```bash
 python3 scripts/validate.py --fix   # copy shared files to the other skills
-python3 scripts/validate.py         # CI runs this on every push and pull request
+python3 scripts/validate.py         # what CI runs on every push and pull request
 ```
 
 The checker scripts also run standalone:
@@ -183,6 +247,8 @@ The checker scripts also run standalone:
 python3 skills/docs-system-design/scripts/check_sdd.py my-sdd.md --outline
 python3 skills/docs-project/scripts/check_docs.py docs --strict
 ```
+
+**Adding a shipped language:** copy `skills/docs-master-plan/locales/en.md`, add a third column, fill the Conventions section, and run `python3 scripts/validate.py --fix`.
 
 ## License
 
